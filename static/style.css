@@ -1,0 +1,279 @@
+:root {
+    --gold: #ffcc00;
+    --gold-dim: #b8860b;
+    --neon-pink: #ff00ff;
+    --neon-blue: #00f3ff;
+    --bg-dark: #050505;
+    --red-vegas: #e60000;
+}
+
+body {
+    margin: 0;
+    background: radial-gradient(circle at center, #3a0000 0%, #000000 90%);
+    font-family: 'Roboto', sans-serif;
+    color: white;
+    overflow-x: hidden; /* Evita rolagem lateral no celular */
+    min-height: 100vh;
+}
+
+/* --- ANIMAÇÃO DE BORDAS --- */
+@keyframes border-dance {
+    0% { background-position: 0% 0%; }
+    100% { background-position: 200% 0%; }
+}
+
+.vegas-border {
+    position: relative;
+    border: 3px solid transparent;
+    background: #000; 
+    background-clip: padding-box;
+    box-shadow: 0 0 20px rgba(0,0,0,0.8);
+}
+
+.vegas-border::after {
+    content: '';
+    position: absolute; top: -3px; bottom: -3px; left: -3px; right: -3px;
+    background: linear-gradient(90deg, var(--gold), #fff, var(--gold), #000, var(--gold), #fff, var(--gold));
+    background-size: 200% 100%;
+    z-index: -1;
+    border-radius: 12px;
+    animation: border-dance 4s linear infinite;
+    box-shadow: 0 0 15px var(--gold-dim);
+}
+
+/* --- ESTRUTURA GERAL --- */
+.screen { display: none; height: 100%; width: 100%; flex-direction: column; }
+.screen.active { display: flex; }
+
+/* --- LOBBY (Otimizado) --- */
+#lobby-screen { align-items: center; justify-content: center; padding: 20px; overflow-y: auto; }
+
+.casino-sign h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(3rem, 8vw, 5rem); /* Fonte ajustável */
+    color: #fff;
+    text-shadow: 0 0 20px var(--neon-pink);
+    animation: flicker 3s infinite alternate;
+    margin-bottom: 30px;
+    text-align: center;
+    line-height: 1.1;
+}
+
+@keyframes flicker {
+    0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { opacity: 1; text-shadow: 0 0 20px var(--neon-pink); }
+    20%, 24%, 55% { opacity: 0.5; text-shadow: none; }
+}
+
+.lobby-container {
+    display: flex; gap: 30px; flex-wrap: wrap; justify-content: center; width: 100%;
+}
+
+.login-panel, .rooms-panel {
+    background: rgba(10, 10, 10, 0.95);
+    padding: 30px;
+    border-radius: 15px;
+    width: 100%; max-width: 350px; /* Não fica gigante, mas preenche celular */
+    min-height: 350px;
+    display: flex; flex-direction: column;
+}
+
+.login-panel h3, .rooms-panel h3 {
+    color: var(--gold);
+    text-align: center;
+    font-family: 'Playfair Display';
+    border-bottom: 1px solid #333;
+    padding-bottom: 10px;
+    margin-top: 0;
+    font-size: 1.5rem;
+}
+
+input {
+    background: #1a1a1a; border: 1px solid #444; color: white;
+    padding: 15px; margin-bottom: 15px; font-size: 1.1rem;
+    text-align: center; width: 100%; box-sizing: border-box;
+    border-radius: 8px;
+}
+input:focus { border-color: var(--gold); outline: none; }
+
+.limit-selector { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.limit-selector input { width: 70px; margin: 0; }
+
+.btn-gold {
+    background: linear-gradient(180deg, #ffd700 0%, #b8860b 100%);
+    border: 1px solid #fff; color: #1a0505; font-weight: 900;
+    padding: 15px; font-size: 1.2rem; cursor: pointer; margin-top: auto;
+    border-radius: 8px; text-transform: uppercase; letter-spacing: 1px;
+    width: 100%;
+}
+
+/* --- JOGO HEADER --- */
+.vegas-header {
+    height: 60px; background: #000; border-bottom: 2px solid var(--gold);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 20px; z-index: 10;
+}
+.room-info { font-size: 1.2rem; color: var(--neon-blue); text-shadow: 0 0 10px var(--neon-blue); font-weight: bold; }
+.players-info { font-size: 1.2rem; cursor: pointer; color: white; display: flex; align-items: center; gap: 8px; }
+
+/* --- ÁREA DO JOGO (RESPONSIVA) --- */
+.game-layout {
+    display: flex;
+    /* Calcula altura descontando header e footer */
+    height: calc(100vh - 110px); 
+    align-items: center;
+    justify-content: center;
+    gap: 30px;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.stage-left, .stage-right {
+    flex: 1; 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    justify-content: center;
+    height: 100%;
+}
+
+/* --- GLOBO (Agora maior e escalável) --- */
+.machine-container {
+    position: relative;
+    width: 100%;
+    max-width: 500px; /* Bem maior no Desktop */
+    aspect-ratio: 1; /* Mantém quadrado */
+    display: flex; align-items: center; justify-content: center;
+}
+#globe-img { width: 100%; height: auto; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.7)); }
+
+.ball-display {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    width: 40%; height: 40%; /* Relativo ao globo */
+    background: radial-gradient(circle at 30% 30%, #ff5e5e, #990000);
+    border-radius: 50%; border: 4px solid #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: clamp(2rem, 5vw, 4.5rem); /* Fonte cresce com a tela */
+    font-weight: bold; font-family: 'Playfair Display';
+    box-shadow: 0 0 30px rgba(255, 255, 255, 0.5); z-index: 50;
+}
+
+.timer-box { font-size: clamp(1.5rem, 3vw, 2.5rem); color: var(--gold); margin-top: 10px; font-family: 'Courier Prime'; text-shadow: 0 0 10px var(--gold); text-align: center; }
+
+/* --- CARTELA (Maior e Flexível) --- */
+.card-frame {
+    padding: 20px;
+    border-radius: 15px;
+    width: 100%;
+    max-width: 500px; /* Maior no Desktop */
+    background: #080808;
+    box-sizing: border-box;
+}
+
+.card-title {
+    color: var(--gold); margin: 0 0 15px 0;
+    font-family: 'Playfair Display';
+    font-size: clamp(1.5rem, 3vw, 2.2rem);
+    text-shadow: 0 0 10px var(--gold-dim);
+}
+
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px; /* Mais espaço */
+}
+
+.grid-item {
+    aspect-ratio: 1; /* Mantém as bolas redondas/quadradas */
+    background: linear-gradient(135deg, #2a2a2a, #1a1a1a);
+    border: 1px solid #444; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: clamp(1rem, 2.5vw, 1.8rem); /* Números grandes */
+    font-weight: bold; color: #888; cursor: pointer;
+    box-shadow: inset 0 0 5px rgba(0,0,0,0.5);
+}
+.grid-item.marked {
+    background: radial-gradient(circle at 30% 30%, #ffffff, var(--gold));
+    color: #000; border-color: #fff; box-shadow: 0 0 20px var(--gold);
+    transform: scale(1.05); z-index: 2;
+}
+
+/* --- RODAPÉ --- */
+.ticker-wrap { position: fixed; bottom: 0; width: 100%; height: 50px; background: #000; border-top: 2px solid var(--neon-pink); display: flex; align-items: center; overflow: hidden; z-index: 100; }
+.ticker { display: flex; animation: scroll 25s linear infinite; padding-left: 100%; white-space: nowrap; }
+.ticker__item { display: flex; color: var(--gold); font-size: 1.3rem; align-items: center; }
+.ticker-ball { width: 32px; height: 32px; border-radius: 50%; background: var(--gold); color: black; display: flex; align-items: center; justify-content: center; margin: 0 15px; font-weight: bold; border: 2px solid #fff; }
+@keyframes scroll { 100% { transform: translateX(-100%); } }
+
+/* --- MODAL VENCEDOR --- */
+.modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); display: none; align-items: center; justify-content: center; z-index: 200; }
+.winner-box {
+    background: #000; padding: 30px; text-align: center;
+    border: 6px dotted #444; position: relative;
+    animation: marquee-lights 0.5s infinite steps(2);
+    box-shadow: 0 0 80px var(--red-vegas);
+    border-radius: 20px; width: 90%; max-width: 500px;
+}
+@keyframes marquee-lights { 0% { border-color: var(--gold); } 100% { border-color: var(--red-vegas); } }
+#winner-name { font-size: clamp(2rem, 5vw, 4rem); color: #fff; font-family: 'Playfair Display'; text-shadow: 0 0 20px var(--neon-pink); animation: text-flash 0.2s infinite; text-transform: uppercase; word-break: break-word;}
+@keyframes text-flash { 0% { opacity: 1; } 50% { opacity: 0.7; color: var(--gold); } 100% { opacity: 1; } }
+
+/* --- AJUSTES MOBILE (A MÁGICA ACONTECE AQUI) --- */
+@media (max-width: 768px) {
+    .casino-sign h1 { margin-top: 20px; font-size: 3rem; }
+    
+    /* Muda layout para coluna no celular */
+    .game-layout {
+        flex-direction: column;
+        height: auto; /* Altura livre para rolar se precisar */
+        padding-bottom: 80px; /* Espaço pro rodapé */
+        justify-content: flex-start;
+        gap: 15px;
+    }
+
+    /* Reduz um pouco o globo no celular para sobrar espaço pra cartela */
+    .machine-container { max-width: 250px; margin-top: 10px; }
+    
+    /* A Cartela ocupa a largura disponível */
+    .card-frame { width: 100%; max-width: 400px; padding: 15px; }
+    
+    /* Ajusta grid para toque fácil */
+    .card-grid { gap: 8px; }
+    .grid-item { font-size: 1.2rem; }
+    
+    /* Esconde elementos menos importantes se a tela for muito pequena */
+    .timer-box { font-size: 1.5rem; margin-top: 5px; }
+    .vegas-header { padding: 0 15px; }
+
+    /* Botão de Música no Header */
+.music-toggle {
+    background: transparent;
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    padding: 5px 15px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: bold;
+    transition: 0.2s;
+    display: flex; align-items: center; gap: 5px;
+}
+
+.music-toggle:hover {
+    background: rgba(255, 204, 0, 0.1);
+    box-shadow: 0 0 10px var(--gold-dim);
+}
+
+/* Quando estiver desligado (classe que o JS vai adicionar) */
+.music-off {
+    border-color: #555;
+    color: #555;
+    text-decoration: line-through;
+}
+
+
+}
+
+.rooms-grid { max-height: 200px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-right: 5px; }
+.room-btn { background: #151515; padding: 12px; cursor: pointer; display: flex; justify-content: space-between; color: #aaa; border: 1px solid #333; border-radius: 5px; font-size: 0.9rem; }
+.dropdown-content { display: none; position: absolute; right: 0; top: 100%; background: #111; border: 1px solid var(--gold); width: 200px; z-index: 100; border-radius: 0 0 10px 10px; }
+.hidden { display: none !important; }
