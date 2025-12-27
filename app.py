@@ -6,14 +6,16 @@ import threading
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'vegas_super_secret'
-# async_mode='threading' é essencial para funcionar no Windows sem travamentos
-socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading')
 
-# Estado do Jogo
+# CONFIGURAÇÃO CRUCIAL PARA O RENDER:
+# Removemos o "async_mode='threading'" forçado para o Render escolher o melhor (eventlet/gevent)
+socketio = SocketIO(app, cors_allowed_origins="*")
+
+# Armazena as salas
 rooms = {}
 
 def get_room_list():
-    """Gera lista de salas para o Lobby"""
+    """Lista salas para o Lobby"""
     lista = []
     for r_id, r_data in rooms.items():
         if len(r_data['players']) > 0:
@@ -26,21 +28,19 @@ def get_room_list():
     return lista
 
 def run_game_loop(room_id):
-    """Motor do Sorteio (Roda em segundo plano)"""
+    """Motor do Jogo"""
     print(f"--- [SALA {room_id}] MOTOR INICIADO ---")
     
-    # O 'app_context' garante que o socket consiga enviar mensagens fora da rota
+    # Contexto do App para garantir envio de mensagens
     with app.app_context():
-        # Pequena pausa antes de começar
         time.sleep(3)
         socketio.emit('game_started', room=room_id)
-        # Atualiza o lobby (sem broadcast=True pois já é padrão)
         socketio.emit('room_list_update', {'rooms': get_room_list()})
 
         while True:
-            # Verifica se a sala ainda existe e está ativa
+            # Verifica se sala existe, está ativa e sem vencedor
             if room_id not in rooms or not rooms[room_id]['active'] or rooms[room_id]['winner']:
-                print(f"--- [SALA {room_id}] JOGO FINALIZADO ---")
+                print(f"--- [SALA {room_id}] FIM DO LOOP ---")
                 break
 
             possible = set(range(1, 61))
@@ -51,22 +51,20 @@ def run_game_loop(room_id):
                 socketio.emit('game_finished', room=room_id)
                 break
 
-            # 1. Sorteia Número
+            # 1. Sorteia
             number = random.choice(remaining)
 
-            # 2. Manda Girar (Frontend)
-            print(f"--- [SALA {room_id}] GIRANDO... ---")
+            # 2. Gira (Avisa frontend)
             socketio.emit('spinning_start', room=room_id)
-            time.sleep(4) # Tempo da animação de giro
+            time.sleep(4) 
 
-            # 3. Revela Número
+            # 3. Revela (Se o jogo ainda estiver valendo)
             if room_id in rooms and rooms[room_id]['active']:
-                print(f"--- [SALA {room_id}] SAIU: {number} ---")
                 rooms[room_id]['drawn'].append(number)
                 socketio.emit('number_drawn', {'number': number}, room=room_id)
             
-            # 4. Intervalo entre bolas
-            time.sleep(12) 
+            # 4. Intervalo
+            time.sleep(12)
 
 @app.route('/')
 def index():
@@ -80,19 +78,27 @@ def on_connect():
 def handle_join(data):
     username = data['username']
     room_id = data['room_id']
-    limit = int(data.get('limit', 20))
+    limit = int(data.get('limit', 20)) # Padrão 20 se não vier nada
     
-    # Cria sala se não existir
+    # CRIA A SALA SE NÃO EXISTIR (SEM SENHA)
     if room_id not in rooms:
-        rooms[room_id] = {'active': False, 'players': {}, 'drawn': [], 'winner': None, 'limit': limit}
+        rooms[room_id] = {
+            'active': False, 
+            'players': {}, 
+            'drawn': [], 
+            'winner': None, 
+            'limit': limit
+        }
     
     r = rooms[room_id]
 
-    # Validações
+    # Validações básicas
     if len(r['players']) >= r['limit']:
-        emit('error_msg', {'msg': 'Sala Lotada!'}); return
+        emit('error_msg', {'msg': 'Sala Lotada!'})
+        return
     if r['active']:
-        emit('error_msg', {'msg': 'Jogo em andamento!'}); return
+        emit('error_msg', {'msg': 'Jogo em andamento!'})
+        return
 
     join_room(room_id)
     
@@ -100,35 +106,36 @@ def handle_join(data):
     card = sorted(random.sample(range(1, 61), 20))
     r['players'][request.sid] = {'name': username, 'card': card}
     
-    # Define se é admin (primeiro a entrar)
+    # Define Admin
     is_admin = list(r['players'].keys())[0] == request.sid
 
     emit('room_joined', {
-        'room_id': room_id, 'card': card, 'is_admin': is_admin, 'limit': r['limit']
+        'room_id': room_id, 
+        'card': card, 
+        'is_admin': is_admin, 
+        'limit': r['limit']
     })
 
-    # Atualiza jogadores na sala
+    # Atualiza listas
     p_names = [p['name'] for p in r['players'].values()]
     socketio.emit('update_players', {'players': p_names, 'count': len(p_names), 'limit': r['limit']}, room=room_id)
-    
-    # Atualiza o Lobby geral (Removido broadcast=True para evitar erro)
-    socketio.emit('room_list_update', {'rooms': get_room_list()})
+    socketio.emit('room_list_update', {'rooms': get_room_list()}) # Sem broadcast=True para evitar erro
 
-    # AUTO-START: Se a sala lotou, começa sozinho
+    # AUTO-START: Se lotou, começa!
     if len(p_names) == r['limit'] and not r['active']:
-        start_logic(room_id)
+        if room_id in rooms:
+            rooms[room_id]['active'] = True
+            rooms[room_id]['drawn'] = []
+            rooms[room_id]['winner'] = None
+            threading.Thread(target=run_game_loop, args=(room_id,), daemon=True).start()
 
 @socketio.on('start_game_cmd')
 def manual_start(data):
-    start_logic(data['room_id'])
-
-def start_logic(room_id):
-    """Inicia a thread do jogo"""
+    room_id = data['room_id']
     if room_id in rooms and not rooms[room_id]['active']:
         rooms[room_id]['active'] = True
         rooms[room_id]['drawn'] = []
         rooms[room_id]['winner'] = None
-        # Roda o loop em paralelo
         threading.Thread(target=run_game_loop, args=(room_id,), daemon=True).start()
 
 @socketio.on('bingo_shout')
@@ -138,7 +145,6 @@ def handle_bingo(data):
         marked = set(data['marked'])
         drawn = set(rooms[room_id]['drawn'])
         
-        # Confere se ganhou mesmo
         if marked.issubset(drawn) and len(marked) >= 20:
             winner = rooms[room_id]['players'][request.sid]['name']
             rooms[room_id]['winner'] = winner
@@ -150,17 +156,13 @@ def on_disconnect():
     for rid, rdata in rooms.items():
         if request.sid in rdata['players']:
             del rdata['players'][request.sid]
-            
             if len(rdata['players']) == 0:
-                del rooms[rid] # Remove sala vazia
+                del rooms[rid]
             else:
                 p_names = [p['name'] for p in rdata['players'].values()]
                 socketio.emit('update_players', {'players': p_names, 'count': len(p_names), 'limit': rdata['limit']}, room=rid)
-            
-            # Atualiza lobby
             socketio.emit('room_list_update', {'rooms': get_room_list()})
             break
 
 if __name__ == '__main__':
-    # allow_unsafe_werkzeug permite rodar sem erros de ambiente de desenvolvimento
     socketio.run(app, debug=True, port=5000, allow_unsafe_werkzeug=True)
