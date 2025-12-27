@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bingo Vegas Royale</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Roboto:wght@400;900&family=Courier+Prime:wght@700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+</head>
+<body>
+
+    <div id="lobby-screen" class="screen active">
+        <div class="casino-sign">
+            <h1>🎰 BINGO VEGAS 🎰</h1>
+        </div>
+        
+        <div class="lobby-container">
+            <div class="login-panel vegas-border">
+                <h3>CRIAR / ENTRAR</h3>
+                <input type="text" id="username" placeholder="Seu Apelido" maxlength="12">
+                <input type="text" id="room_id" placeholder="Nome da Sala" maxlength="10">
+                
+                <div class="limit-selector">
+                    <label>Participantes:</label>
+                    <input type="number" id="max_players" value="20" min="2" max="20">
+                </div>
+                <small style="color:#888; margin-bottom:10px;">(O jogo inicia ao completar)</small>
+
+                <button onclick="joinRoom()" class="btn-gold">ENTRAR NA MESA</button>
+                <p id="error-msg" class="error"></p>
+            </div>
+
+            <div class="rooms-panel vegas-border">
+                <h3>SALAS ABERTAS</h3>
+                <div id="rooms-list" class="rooms-grid">
+                    <p style="text-align:center; color:#666;">Carregando...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="game-screen" class="screen">
+        <header class="vegas-header">
+            <div class="room-info">SALA: <span id="display-room">--</span></div>
+            
+            <button id="btn-music" onclick="toggleMusic()" class="music-toggle">
+            🎵 ON
+            </button>
+            <div class="players-info" onclick="togglePlayerList()">
+                👥 <span id="player-count">0</span>/<span id="room-limit">20</span>
+                <div id="player-dropdown" class="dropdown-content">
+                    <ul id="players-ul"></ul>
+                </div>
+            </div>
+        </header>
+
+        <main class="game-layout">
+            <section class="stage-left">
+                <div class="machine-container">
+                    <img src="{{ url_for('static', filename='globo.gif') }}" id="globe-img" alt="Globo">
+                    <div id="current-ball" class="ball-display hidden">
+                        <span id="ball-number">00</span>
+                    </div>
+                </div>
+
+                <div class="timer-box">
+                    PRÓXIMA BOLA:<br>
+                    <span id="timer">--</span>
+                </div>
+                
+                <button id="btn-start" class="btn-start hidden" onclick="startGame()">▶ INICIAR AGORA</button>
+                <div id="waiting-msg" class="waiting-text hidden">AGUARDANDO JOGADORES...</div>
+            </section>
+
+            <section class="stage-right">
+                <div class="card-frame vegas-border">
+                    <h2 class="card-title">SUA CARTELA</h2>
+                    <div class="progress-bar"><div id="progress-fill"></div></div>
+                    <div id="score-text">AGUARDANDO INÍCIO...</div>
+                    <div id="bingo-card" class="card-grid"></div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="ticker-wrap">
+            <div class="ticker-heading">HISTÓRICO:</div>
+            <div class="ticker">
+                <div id="ticker-content" class="ticker__item">AGUARDANDO JOGADORES PARA INICIAR...</div>
+            </div>
+        </footer>
+    </div>
+
+    <div id="winner-modal" class="modal">
+        <div class="modal-content winner-box">
+            <div class="lights-container"></div>
+            
+            <h1 class="jackpot-text">BINGO!</h1>
+            <p>TEMOS UM VENCEDOR</p>
+            
+            <div class="winner-name-display">
+                <span id="winner-name">NOME</span>
+            </div>
+
+            <button onclick="location.reload()" class="btn-gold" style="margin-top:30px;">VOLTAR AO LOBBY</button>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
