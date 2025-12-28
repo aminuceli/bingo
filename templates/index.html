@@ -86,9 +86,7 @@
         <footer class="ticker-wrap">
             <div class="ticker-heading">HISTÓRICO:</div>
             <div class="ticker">
-                <div id="ticker-content" class="ticker__item">
-                    🛡️ JOGO SEGURO: PROIBIDO APOSTAS REAIS - DIVERSÃO FAMILIAR APENAS 🛡️
-                </div>
+                <div id="ticker-content" class="ticker__item">AGUARDANDO JOGADORES PARA INICIAR...</div>
             </div>
         </footer>
     </div>
@@ -96,38 +94,17 @@
     <div id="winner-modal" class="modal">
         <div class="modal-content winner-box">
             <div class="lights-container"></div>
+            
             <h1 class="jackpot-text">BINGO!</h1>
             <p>TEMOS UM VENCEDOR</p>
+            
             <div class="winner-name-display">
                 <span id="winner-name">NOME</span>
             </div>
+
             <button onclick="location.reload()" class="btn-gold" style="margin-top:30px;">VOLTAR AO LOBBY</button>
         </div>
     </div>
-
-    <div id="terms-modal" class="modal" style="display:flex;">
-        <div class="modal-content winner-box" style="border-color: var(--neon-blue); max-width: 400px;">
-            <h2 style="color: var(--gold); margin-top:0;">🎲 MODO DIVERSÃO</h2>
-            <p style="font-size: 1rem; line-height: 1.5;">
-                Este é um jogo <strong>GRATUITO</strong> feito para jogar com amigos e família.
-            </p>
-            <ul style="text-align: left; color: #ccc; font-size: 0.9rem; margin: 15px 0;">
-                <li>🚫 Proibido apostar Dinheiro Real</li>
-                <li>🚫 Proibido uso por "Bancas"</li>
-                <li>✅ Permitido apenas risadas e diversão</li>
-            </ul>
-            <button onclick="acceptTerms()" class="btn-gold" style="width:100%;">CONCORDO, VAMOS JOGAR!</button>
-        </div>
-    </div>
-
-    <script>
-        // Script simples para fechar o modal
-        function acceptTerms() {
-            document.getElementById('terms-modal').style.display = 'none';
-            // Toca a música se o navegador permitir e ela já tiver sido carregada
-            if(typeof bgMusic !== 'undefined') bgMusic.play().catch(e=>{});
-        }
-    </script>
 
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
