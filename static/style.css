@@ -1,3 +1,4 @@
+/* --- 1. CONFIGURAÇÕES GERAIS E VARIÁVEIS --- */
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Roboto:wght@400;900&family=Courier+Prime:wght@700&display=swap');
 
 :root {
@@ -18,7 +19,6 @@ body {
     background-image: radial-gradient(circle at center, #1a1a1a 0%, #000 100%);
     color: white;
     min-height: 100vh;
-    /* REMOVIDO: overflow: hidden; -> Isso deixava a página travada */
 }
 
 /* Telas */
@@ -26,20 +26,21 @@ body {
 .screen.active { display: flex; }
 .hidden { display: none !important; }
 
-/* --- TELA DE LOBBY --- */
+/* --- 2. TELA DE LOBBY --- */
 #lobby-screen {
     justify-content: center;
     align-items: center;
-    padding: 20px; /* Espaço para não colar na borda */
     background: url('https://www.transparenttextures.com/patterns/black-felt.png'), linear-gradient(135deg, #111, #220000);
+    padding-bottom: 50px;
 }
 
 .casino-sign h1 {
     font-family: 'Playfair Display', serif;
-    font-size: 3rem; /* Diminuí um pouco para celular */
+    font-size: 4rem;
     color: var(--gold);
     text-shadow: 0 0 10px var(--gold), 0 0 20px var(--red);
-    margin-bottom: 20px;
+    margin-bottom: 30px;
+    letter-spacing: 3px;
     text-align: center;
 }
 
@@ -48,14 +49,13 @@ body {
     gap: 20px;
     justify-content: center;
     flex-wrap: wrap;
-    margin-bottom: 40px; /* Espaço para o rodapé não colar */
 }
 
 .vegas-border {
     border: 2px solid var(--gold);
     border-radius: 15px;
     background: var(--panel-bg);
-    box-shadow: 0 0 15px var(--gold-dim);
+    box-shadow: 0 0 15px var(--gold-dim), inset 0 0 20px #000;
     padding: 20px;
 }
 
@@ -74,93 +74,178 @@ body {
 .btn-gold {
     background: linear-gradient(180deg, #ffd700, #b8860b);
     border: none; color: #000; font-weight: bold; padding: 12px; border-radius: 5px; cursor: pointer; font-size: 1rem; margin-top: 10px;
+    transition: transform 0.1s;
 }
+.btn-gold:hover { transform: scale(1.02); box-shadow: 0 0 15px var(--gold); }
 
-/* --- TELA DO JOGO (Compacta) --- */
+/* --- 3. TELA DO JOGO --- */
 .vegas-header {
-    background: #111; border-bottom: 2px solid var(--gold); padding: 5px 15px;
-    display: flex; justify-content: space-between; align-items: center; height: 50px;
+    background: #111;
+    border-bottom: 2px solid var(--gold);
+    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 60px;
 }
 
+.room-info { font-family: 'Courier Prime', monospace; color: var(--gold); font-size: 1.2rem; }
+
+/* Botão Música */
+.music-toggle { background: transparent; border: 1px solid var(--gold); color: var(--gold); padding: 5px 15px; border-radius: 20px; cursor: pointer; }
+.music-off { border-color: #555; color: #555; text-decoration: line-through; }
+.players-info { cursor: pointer; position: relative; font-size: 1.1rem; }
+.dropdown-content { display: none; position: absolute; right: 0; top: 100%; background: #111; border: 1px solid var(--gold); width: 200px; z-index: 200; border-radius: 0 0 10px 10px; }
+.dropdown-content ul { list-style: none; padding: 0; margin: 0; max-height: 200px; overflow-y: auto; }
+
+
+/* LAYOUT DO JOGO */
 .game-layout {
     display: flex;
-    /* Importante: Altura automática para ajustar ao conteúdo */
-    justify-content: center; align-items: flex-start; 
-    gap: 30px; padding: 10px;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 50px;
+    padding: 20px;
+    overflow-y: auto;
+    /* ESSENCIAL: Espaço extra embaixo para o rodapé não cobrir a cartela */
+    padding-bottom: 100px; 
+    flex-grow: 1;
 }
 
-/* Máquina Esquerda */
+/* Esquerda */
 .stage-left { display: flex; flex-direction: column; align-items: center; width: 300px; }
-.machine-container { position: relative; width: 100%; max-width: 220px; } /* Menor para caber no celular */
+.machine-container { position: relative; width: 100%; max-width: 300px; text-align: center; }
 #globe-img { width: 100%; }
 .shaking { animation: shake 0.5s infinite; }
 @keyframes shake { 0% { transform: translate(1px, 1px) rotate(0deg); } 25% { transform: translate(-1px, -2px) rotate(-1deg); } 75% { transform: translate(-1px, 2px) rotate(-1deg); } 100% { transform: translate(1px, -1px) rotate(0deg); } }
 
 .ball-display {
     position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    width: 80px; height: 80px; /* Bola menor */
+    width: 100px; height: 100px;
     background: radial-gradient(circle at 30% 30%, #fff, #ddd);
     border-radius: 50%; display: flex; justify-content: center; align-items: center;
-    border: 2px solid #333; color: #000; font-weight: 900; font-size: 2.5rem;
+    border: 2px solid #333; color: #000; font-weight: 900; font-size: 3rem;
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
 }
 .ball-enter { animation: popIn 0.5s; }
 @keyframes popIn { 0% { transform: translate(-50%, -50%) scale(0); } 100% { transform: translate(-50%, -50%) scale(1); } }
 
-.timer-box { margin-top: 10px; font-family: 'Courier Prime', monospace; font-size: 1.5rem; color: var(--neon-blue); text-align: center; }
-.timer-active { color: var(--red); }
+.timer-box { margin-top: 20px; font-family: 'Courier Prime', monospace; font-size: 2rem; text-align: center; color: var(--neon-blue); text-shadow: 0 0 10px var(--neon-blue); }
+.timer-active { color: var(--red); text-shadow: 0 0 10px var(--red); }
+.btn-start { background: #27ae60; border: none; color: white; padding: 10px 20px; border-radius: 50px; margin-top: 20px; cursor: pointer; font-weight: bold; box-shadow: 0 0 10px #27ae60; animation: pulse 2s infinite; }
+@keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(39, 174, 96, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(39, 174, 96, 0); } 100% { box-shadow: 0 0 0 0 rgba(39, 174, 96, 0); } }
+.waiting-text { margin-top: 15px; color: #aaa; animation: blink 1.5s infinite; }
+@keyframes blink { 50% { opacity: 0.3; } }
 
-/* Cartela Direita */
+
+/* Direita (Cartela) */
 .stage-right { display: flex; flex-direction: column; align-items: center; }
-.card-frame { background: #fff; border: 5px solid var(--gold); border-radius: 10px; padding: 10px; width: 100%; max-width: 380px; }
-.card-title { color: #000; text-align: center; margin: 0 0 5px 0; font-family: 'Playfair Display', serif; font-size: 1.5rem; border-bottom: 2px solid #ccc; }
-.progress-bar { width: 100%; height: 8px; background: #eee; border-radius: 5px; overflow: hidden; }
+.card-frame { background: #fff; border: 10px solid var(--gold); border-radius: 10px; padding: 20px; box-shadow: 0 0 30px rgba(0,0,0,0.8); width: 400px; }
+.card-title { color: #000; text-align: center; margin: 0 0 10px 0; font-family: 'Playfair Display', serif; font-size: 2rem; border-bottom: 2px solid #ccc; padding-bottom: 5px; }
+.progress-bar { width: 100%; height: 10px; background: #eee; border-radius: 5px; overflow: hidden; margin-bottom: 5px; }
 #progress-fill { height: 100%; background: var(--red); width: 0%; transition: width 0.5s; }
-#score-text { text-align: center; color: #555; font-size: 0.8rem; margin-bottom: 10px; font-weight: bold; }
-
-.card-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; }
+#score-text { text-align: center; color: #555; font-size: 0.9rem; margin-bottom: 15px; font-weight: bold; }
+.card-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
 .grid-item {
     background: #eee; color: #333; aspect-ratio: 1; display: flex; justify-content: center; align-items: center;
-    font-weight: 900; font-size: 1.2rem; border-radius: 3px; cursor: pointer; border: 1px solid #ddd;
+    font-weight: 900; font-size: 1.5rem; border-radius: 5px; cursor: pointer; border: 2px solid #ddd;
 }
-.grid-item.marked { background: var(--red); color: white; transform: scale(0.95); }
+.grid-item:hover { background: #ddd; }
+.grid-item.marked { background: var(--red); color: white; border-color: #a93226; transform: scale(0.95); box-shadow: inset 0 0 10px rgba(0,0,0,0.3); }
 
-/* --- RODAPÉ NORMAL (NÃO FIXO) --- */
-/* Ele vai aparecer no final do Lobby e rolar junto */
-.legal-footer {
+
+/* --- 4. RODAPÉ (TICKER - DE VOLTA!) --- */
+.ticker-wrap {
+    position: fixed;
+    bottom: 0;
     width: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    border-top: 1px solid #333;
-    padding: 20px;
-    text-align: center;
-    font-size: 0.8rem;
-    color: #888;
-    margin-top: auto; /* Empurra para baixo se sobrar espaço */
+    overflow: hidden;
+    height: 50px;
+    background-color: #111;
+    border-top: 2px solid var(--gold);
+    padding-left: 100%; /* Começa fora da tela */
+    display: flex;
+    align-items: center;
+    z-index: 999;
 }
-.safe-badge { background: #2ecc71; color: #000; padding: 2px 6px; border-radius: 4px; font-weight: bold; display: inline-block; margin-bottom: 5px; }
 
-/* Modais */
+/* Animação que corre da direita para esquerda */
+@keyframes ticker {
+    0% { transform: translate3d(0, 0, 0); }
+    100% { transform: translate3d(-100%, 0, 0); }
+}
+
+.ticker {
+    display: inline-block;
+    height: 50px;
+    line-height: 50px;
+    white-space: nowrap;
+    padding-right: 100%;
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+    animation-name: ticker;
+    animation-duration: 30s; /* Ajuste a velocidade aqui */
+}
+
+.ticker__item {
+    display: inline-block;
+    padding: 0 2rem;
+    font-size: 1.5rem;
+    color: var(--gold);
+    font-family: 'Courier Prime', monospace;
+    font-weight: bold;
+}
+
+/* Bolinhas dentro do ticker (Histórico) */
+.ticker-ball {
+    display: inline-block;
+    background: white;
+    color: black;
+    border-radius: 50%;
+    width: 35px; height: 35px;
+    line-height: 35px;
+    text-align: center;
+    margin: 0 5px;
+    font-weight: bold;
+    border: 2px solid var(--gold);
+}
+.ticker-heading {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    background: var(--gold);
+    color: black;
+    padding: 0 10px;
+    height: 50px;
+    line-height: 50px;
+    font-weight: bold;
+    z-index: 1000;
+    border-right: 2px solid #000;
+}
+
+
+/* --- 5. MODAIS --- */
 .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.9); justify-content: center; align-items: center; }
-.modal-content { background: #111; border: 4px solid var(--gold); padding: 30px; text-align: center; border-radius: 20px; max-width: 90%; color: white; }
-.winner-name-display { font-size: 2rem; color: white; margin-top: 10px; font-weight: bold; }
+.modal-content { background: #111; border: 4px solid var(--gold); padding: 40px; text-align: center; border-radius: 20px; box-shadow: 0 0 50px var(--gold); max-width: 90%; color: white;}
+.jackpot-text { font-size: 4rem; color: var(--gold); margin: 0; font-family: 'Playfair Display', serif; animation: textGlow 1s infinite alternate; }
+@keyframes textGlow { from { text-shadow: 0 0 10px var(--gold); } to { text-shadow: 0 0 30px var(--gold), 0 0 50px white; } }
+.winner-name-display { font-size: 2.5rem; color: white; margin-top: 20px; font-weight: bold; }
 
-/* Outros botões e menus */
-.btn-start { background: #27ae60; border: none; color: white; padding: 10px 20px; border-radius: 50px; margin-top: 10px; cursor: pointer; font-weight: bold; }
-.waiting-text { margin-top: 10px; color: #aaa; animation: blink 1.5s infinite; }
-@keyframes blink { 50% { opacity: 0.3; } }
-.music-toggle { background: transparent; border: 1px solid var(--gold); color: var(--gold); padding: 2px 10px; border-radius: 10px; cursor: pointer; }
-.dropdown-content { display: none; position: absolute; right: 0; top: 100%; background: #111; border: 1px solid var(--gold); width: 200px; z-index: 200; }
-.players-info { cursor: pointer; position: relative; color: white; }
-
-/* --- MOBILE --- */
+/* --- RESPONSIVIDADE --- */
 @media (max-width: 768px) {
+    .casino-sign h1 { font-size: 3rem; margin-top: 20px; }
+    
     .game-layout {
         flex-direction: column;
-        align-items: center;
+        padding-bottom: 120px; /* Aumentei ainda mais para o rodapé não cobrir */
         gap: 15px;
-        /* SEM PADDING GIGANTE - VOLTA AO NORMAL */
     }
-    .machine-container { max-width: 180px; } /* Globo menor no celular */
-    .timer-box { font-size: 1.2rem; }
-    .card-frame { padding: 8px; width: 100%; }
-    .grid-item { font-size: 1.1rem; }
+    .machine-container { max-width: 250px; margin-top: 10px; }
+    .card-frame { width: 100%; max-width: 400px; padding: 15px; }
+    .card-grid { gap: 8px; }
+    .grid-item { font-size: 1.2rem; }
+    .vegas-header { padding: 0 15px; }
+    
+    /* Ajuste do Ticker no celular */
+    .ticker-heading { font-size: 0.8rem; width: auto; }
 }
