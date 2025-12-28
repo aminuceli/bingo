@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bingo Vegas Royale</title>
+    <title>Bingo da Família | Simulador Gratuito</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Roboto:wght@400;900&family=Courier+Prime:wght@700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
@@ -47,6 +47,7 @@
             <button id="btn-music" onclick="toggleMusic()" class="music-toggle">
             🎵 ON
             </button>
+
             <div class="players-info" onclick="togglePlayerList()">
                 👥 <span id="player-count">0</span>/<span id="room-limit">20</span>
                 <div id="player-dropdown" class="dropdown-content">
@@ -83,10 +84,15 @@
             </section>
         </main>
 
-        <footer class="ticker-wrap">
-            <div class="ticker-heading">HISTÓRICO:</div>
-            <div class="ticker">
-                <div id="ticker-content" class="ticker__item">AGUARDANDO JOGADORES PARA INICIAR...</div>
+        <footer class="legal-footer">
+            <div class="footer-content">
+                <span class="safe-badge">🛡️ JOGO SEGURO</span>
+                <p>
+                    <strong>Simulador de Bingo Familiar.</strong> Este software foi desenvolvido exclusivamente para fins de 
+                    entretenimento e programação. <br>
+                    <span style="color: #ff5e5e;">É estritamente proibido o uso para apostas reais, jogos de azar ou fins comerciais.</span>
+                </p>
+                <p class="dev-credits">Criado com ❤️ para a Família & Amigos</p>
             </div>
         </footer>
     </div>
@@ -106,8 +112,7 @@
         </div>
     </div>
 
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
-<div id="terms-modal" class="modal" style="display:flex;">
+    <div id="terms-modal" class="modal" style="display:flex;">
         <div class="modal-content winner-box" style="border-color: var(--neon-blue); max-width: 400px;">
             <h2 style="color: var(--gold); margin-top:0;">🎲 MODO DIVERSÃO</h2>
             <p style="font-size: 1rem; line-height: 1.5;">
@@ -123,14 +128,13 @@
     </div>
 
     <script>
-        // Script simples para fechar o modal
+        // Script para fechar o modal de termos e iniciar a música
         function acceptTerms() {
             document.getElementById('terms-modal').style.display = 'none';
-            // Toca a música se o navegador permitir e ela já tiver sido carregada
             if(typeof bgMusic !== 'undefined') bgMusic.play().catch(e=>{});
         }
     </script>
+    
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
-
