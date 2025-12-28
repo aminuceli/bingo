@@ -1,4 +1,3 @@
-/* --- 1. CONFIGURAÇÕES GERAIS E VARIÁVEIS --- */
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Roboto:wght@400;900&family=Courier+Prime:wght@700&display=swap');
 
 :root {
@@ -18,30 +17,29 @@ body {
     background-color: var(--dark-bg);
     background-image: radial-gradient(circle at center, #1a1a1a 0%, #000 100%);
     color: white;
-    height: 100vh;
-    overflow: hidden; /* Evita barra de rolagem dupla */
+    min-height: 100vh;
+    /* REMOVIDO: overflow: hidden; -> Isso deixava a página travada */
 }
 
-/* Esconde telas inativas */
-.screen { display: none; height: 100vh; flex-direction: column; }
+/* Telas */
+.screen { display: none; min-height: 100vh; flex-direction: column; }
 .screen.active { display: flex; }
-
 .hidden { display: none !important; }
 
-/* --- 2. TELA DE LOBBY (ENTRADA) --- */
+/* --- TELA DE LOBBY --- */
 #lobby-screen {
     justify-content: center;
     align-items: center;
+    padding: 20px; /* Espaço para não colar na borda */
     background: url('https://www.transparenttextures.com/patterns/black-felt.png'), linear-gradient(135deg, #111, #220000);
 }
 
 .casino-sign h1 {
     font-family: 'Playfair Display', serif;
-    font-size: 4rem;
+    font-size: 3rem; /* Diminuí um pouco para celular */
     color: var(--gold);
     text-shadow: 0 0 10px var(--gold), 0 0 20px var(--red);
-    margin-bottom: 30px;
-    letter-spacing: 3px;
+    margin-bottom: 20px;
     text-align: center;
 }
 
@@ -50,366 +48,119 @@ body {
     gap: 20px;
     justify-content: center;
     flex-wrap: wrap;
+    margin-bottom: 40px; /* Espaço para o rodapé não colar */
 }
 
 .vegas-border {
     border: 2px solid var(--gold);
     border-radius: 15px;
     background: var(--panel-bg);
-    box-shadow: 0 0 15px var(--gold-dim), inset 0 0 20px #000;
+    box-shadow: 0 0 15px var(--gold-dim);
     padding: 20px;
 }
 
-.login-panel {
-    display: flex;
-    flex-direction: column;
-    width: 300px;
-    text-align: center;
-}
+.login-panel { display: flex; flex-direction: column; width: 300px; text-align: center; }
+.login-panel input { background: #333; border: 1px solid #555; color: var(--gold); padding: 10px; margin-bottom: 10px; border-radius: 5px; text-align: center; }
+.limit-selector { display: flex; justify-content: space-between; margin-bottom: 10px; color: #ccc; }
+.limit-selector input { width: 60px; }
 
-.login-panel input {
-    background: #333;
-    border: 1px solid #555;
-    color: var(--gold);
-    padding: 10px;
-    margin-bottom: 10px;
-    border-radius: 5px;
-    font-size: 1rem;
-    text-align: center;
-}
+.rooms-panel { width: 300px; height: 350px; display: flex; flex-direction: column; }
+.rooms-grid { overflow-y: auto; flex-grow: 1; display: flex; flex-direction: column; gap: 8px; }
 
-.limit-selector {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-    font-size: 0.9rem;
-    color: #ccc;
-}
-.limit-selector input { width: 60px; margin: 0; }
-
-.rooms-panel {
-    width: 300px;
-    height: 350px;
-    display: flex;
-    flex-direction: column;
-}
-
-.rooms-grid {
-    overflow-y: auto;
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.room-btn {
-    background: #151515;
-    padding: 12px;
-    cursor: pointer;
-    display: flex;
-    justify-content: space-between;
-    color: #aaa;
-    border: 1px solid #333;
-    border-radius: 5px;
-    font-size: 0.9rem;
-    transition: 0.2s;
-}
+.room-btn { background: #151515; padding: 12px; cursor: pointer; display: flex; justify-content: space-between; color: #aaa; border: 1px solid #333; border-radius: 5px; }
 .room-btn:hover { border-color: var(--gold); color: white; background: #222; }
-.room-btn.full { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
+.room-btn.full { opacity: 0.5; pointer-events: none; }
 
-/* Botão Dourado Padrão */
 .btn-gold {
     background: linear-gradient(180deg, #ffd700, #b8860b);
-    border: none;
-    color: #000;
-    font-weight: bold;
-    padding: 12px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 1rem;
-    margin-top: 10px;
-    transition: transform 0.1s;
+    border: none; color: #000; font-weight: bold; padding: 12px; border-radius: 5px; cursor: pointer; font-size: 1rem; margin-top: 10px;
 }
-.btn-gold:hover { transform: scale(1.02); box-shadow: 0 0 15px var(--gold); }
-.btn-gold:active { transform: scale(0.98); }
 
-
-/* --- 3. TELA DO JOGO --- */
+/* --- TELA DO JOGO (Compacta) --- */
 .vegas-header {
-    background: #111;
-    border-bottom: 2px solid var(--gold);
-    padding: 10px 30px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    height: 60px;
+    background: #111; border-bottom: 2px solid var(--gold); padding: 5px 15px;
+    display: flex; justify-content: space-between; align-items: center; height: 50px;
 }
 
-.room-info { font-family: 'Courier Prime', monospace; color: var(--gold); font-size: 1.2rem; }
-
-/* Botão de Música */
-.music-toggle {
-    background: transparent;
-    border: 1px solid var(--gold);
-    color: var(--gold);
-    padding: 5px 15px;
-    border-radius: 20px;
-    cursor: pointer;
-    font-size: 0.8rem;
-    font-weight: bold;
-    transition: 0.2s;
-}
-.music-toggle:hover { background: rgba(255, 215, 0, 0.1); box-shadow: 0 0 10px var(--gold-dim); }
-.music-off { border-color: #555; color: #555; text-decoration: line-through; }
-
-/* Dropdown de Jogadores */
-.players-info { cursor: pointer; position: relative; font-size: 1.1rem; }
-.players-info:hover { color: var(--gold); }
-
-.dropdown-content {
-    display: none;
-    position: absolute;
-    right: 0;
-    top: 100%;
-    background: #111;
-    border: 1px solid var(--gold);
-    width: 200px;
-    z-index: 200;
-    border-radius: 0 0 10px 10px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.8);
-}
-.dropdown-content ul { list-style: none; padding: 0; margin: 0; max-height: 200px; overflow-y: auto; }
-
-/* Layout Principal do Jogo */
 .game-layout {
     display: flex;
-    height: calc(100vh - 60px); /* Tira altura do header */
-    justify-content: center;
-    align-items: center;
-    gap: 50px;
-    padding: 20px;
-    overflow-y: auto; /* Permite rolagem se a tela for pequena */
+    /* Importante: Altura automática para ajustar ao conteúdo */
+    justify-content: center; align-items: flex-start; 
+    gap: 30px; padding: 10px;
 }
 
-/* Lado Esquerdo (Máquina) */
-.stage-left {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 300px;
-}
-
-.machine-container { position: relative; width: 100%; max-width: 300px; text-align: center; }
-
-#globe-img { width: 100%; transition: transform 0.1s; }
+/* Máquina Esquerda */
+.stage-left { display: flex; flex-direction: column; align-items: center; width: 300px; }
+.machine-container { position: relative; width: 100%; max-width: 220px; } /* Menor para caber no celular */
+#globe-img { width: 100%; }
 .shaking { animation: shake 0.5s infinite; }
 @keyframes shake { 0% { transform: translate(1px, 1px) rotate(0deg); } 25% { transform: translate(-1px, -2px) rotate(-1deg); } 75% { transform: translate(-1px, 2px) rotate(-1deg); } 100% { transform: translate(1px, -1px) rotate(0deg); } }
 
 .ball-display {
-    position: absolute;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    width: 100px; height: 100px;
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    width: 80px; height: 80px; /* Bola menor */
     background: radial-gradient(circle at 30% 30%, #fff, #ddd);
-    border-radius: 50%;
-    display: flex; justify-content: center; align-items: center;
-    box-shadow: 0 0 20px rgba(0,0,0,0.5);
-    border: 2px solid #333;
-    color: #000;
-    font-weight: 900;
-    font-size: 3rem;
-    font-family: 'Arial', sans-serif;
+    border-radius: 50%; display: flex; justify-content: center; align-items: center;
+    border: 2px solid #333; color: #000; font-weight: 900; font-size: 2.5rem;
 }
-.ball-enter { animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-@keyframes popIn { 0% { transform: translate(-50%, -50%) scale(0); opacity: 0; } 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; } }
+.ball-enter { animation: popIn 0.5s; }
+@keyframes popIn { 0% { transform: translate(-50%, -50%) scale(0); } 100% { transform: translate(-50%, -50%) scale(1); } }
 
-.timer-box {
-    margin-top: 20px;
-    font-family: 'Courier Prime', monospace;
-    font-size: 2rem;
-    text-align: center;
-    color: var(--neon-blue);
-    text-shadow: 0 0 10px var(--neon-blue);
-}
-.timer-active { color: var(--red); text-shadow: 0 0 10px var(--red); }
+.timer-box { margin-top: 10px; font-family: 'Courier Prime', monospace; font-size: 1.5rem; color: var(--neon-blue); text-align: center; }
+.timer-active { color: var(--red); }
 
-.btn-start {
-    background: #27ae60;
-    border: none; color: white;
-    padding: 10px 20px;
-    font-size: 1.2rem;
-    border-radius: 50px;
-    margin-top: 20px;
-    cursor: pointer;
-    box-shadow: 0 0 10px #27ae60;
-    font-weight: bold;
-    animation: pulse 2s infinite;
-}
-@keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(39, 174, 96, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(39, 174, 96, 0); } 100% { box-shadow: 0 0 0 0 rgba(39, 174, 96, 0); } }
-
-.waiting-text { margin-top: 15px; color: #aaa; animation: blink 1.5s infinite; }
-@keyframes blink { 50% { opacity: 0.3; } }
-
-
-/* Lado Direito (Cartela) */
+/* Cartela Direita */
 .stage-right { display: flex; flex-direction: column; align-items: center; }
-
-.card-frame {
-    background: #fff;
-    border: 10px solid var(--gold);
-    border-radius: 10px;
-    padding: 20px;
-    box-shadow: 0 0 30px rgba(0,0,0,0.8);
-    width: 400px;
-}
-
-.card-title {
-    color: #000;
-    text-align: center;
-    margin: 0 0 10px 0;
-    font-family: 'Playfair Display', serif;
-    font-size: 2rem;
-    text-transform: uppercase;
-    border-bottom: 2px solid #ccc;
-    padding-bottom: 5px;
-}
-
-.progress-bar { width: 100%; height: 10px; background: #eee; border-radius: 5px; overflow: hidden; margin-bottom: 5px; }
+.card-frame { background: #fff; border: 5px solid var(--gold); border-radius: 10px; padding: 10px; width: 100%; max-width: 380px; }
+.card-title { color: #000; text-align: center; margin: 0 0 5px 0; font-family: 'Playfair Display', serif; font-size: 1.5rem; border-bottom: 2px solid #ccc; }
+.progress-bar { width: 100%; height: 8px; background: #eee; border-radius: 5px; overflow: hidden; }
 #progress-fill { height: 100%; background: var(--red); width: 0%; transition: width 0.5s; }
-#score-text { text-align: center; color: #555; font-size: 0.9rem; margin-bottom: 15px; font-weight: bold; }
+#score-text { text-align: center; color: #555; font-size: 0.8rem; margin-bottom: 10px; font-weight: bold; }
 
-.card-grid {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 10px;
-}
-
+.card-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; }
 .grid-item {
-    background: #eee;
-    color: #333;
-    aspect-ratio: 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-weight: 900;
-    font-size: 1.5rem;
-    border-radius: 5px;
-    cursor: pointer;
-    border: 2px solid #ddd;
-    transition: 0.1s;
-    user-select: none;
+    background: #eee; color: #333; aspect-ratio: 1; display: flex; justify-content: center; align-items: center;
+    font-weight: 900; font-size: 1.2rem; border-radius: 3px; cursor: pointer; border: 1px solid #ddd;
 }
-.grid-item:hover { background: #ddd; }
-.grid-item.marked {
-    background: var(--red);
-    color: white;
-    border-color: #a93226;
-    transform: scale(0.95);
-    box-shadow: inset 0 0 10px rgba(0,0,0,0.3);
-}
+.grid-item.marked { background: var(--red); color: white; transform: scale(0.95); }
 
-
-/* --- 4. MODAIS (JANELAS FLUTUANTES) --- */
-.modal {
-    display: none;
-    position: fixed; z-index: 2000;
-    left: 0; top: 0;
-    width: 100%; height: 100%;
-    background-color: rgba(0,0,0,0.9);
-    justify-content: center; align-items: center;
-    backdrop-filter: blur(5px);
-}
-
-.modal-content {
-    background: #111;
-    border: 4px solid var(--gold);
-    padding: 40px;
+/* --- RODAPÉ NORMAL (NÃO FIXO) --- */
+/* Ele vai aparecer no final do Lobby e rolar junto */
+.legal-footer {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    border-top: 1px solid #333;
+    padding: 20px;
     text-align: center;
-    border-radius: 20px;
-    box-shadow: 0 0 50px var(--gold);
-    position: relative;
-    max-width: 90%;
+    font-size: 0.8rem;
+    color: #888;
+    margin-top: auto; /* Empurra para baixo se sobrar espaço */
 }
+.safe-badge { background: #2ecc71; color: #000; padding: 2px 6px; border-radius: 4px; font-weight: bold; display: inline-block; margin-bottom: 5px; }
 
-.jackpot-text {
-    font-size: 4rem; color: var(--gold);
-    margin: 0; font-family: 'Playfair Display', serif;
-    animation: textGlow 1s infinite alternate;
-}
-@keyframes textGlow { from { text-shadow: 0 0 10px var(--gold); } to { text-shadow: 0 0 30px var(--gold), 0 0 50px white; } }
+/* Modais */
+.modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.9); justify-content: center; align-items: center; }
+.modal-content { background: #111; border: 4px solid var(--gold); padding: 30px; text-align: center; border-radius: 20px; max-width: 90%; color: white; }
+.winner-name-display { font-size: 2rem; color: white; margin-top: 10px; font-weight: bold; }
 
-.winner-name-display {
-    font-size: 2.5rem; color: white;
-    margin-top: 20px; font-weight: bold;
-    text-transform: uppercase;
-}
+/* Outros botões e menus */
+.btn-start { background: #27ae60; border: none; color: white; padding: 10px 20px; border-radius: 50px; margin-top: 10px; cursor: pointer; font-weight: bold; }
+.waiting-text { margin-top: 10px; color: #aaa; animation: blink 1.5s infinite; }
+@keyframes blink { 50% { opacity: 0.3; } }
+.music-toggle { background: transparent; border: 1px solid var(--gold); color: var(--gold); padding: 2px 10px; border-radius: 10px; cursor: pointer; }
+.dropdown-content { display: none; position: absolute; right: 0; top: 100%; background: #111; border: 1px solid var(--gold); width: 200px; z-index: 200; }
+.players-info { cursor: pointer; position: relative; color: white; }
 
-/* Modal de Termos (Modo Diversão) */
-#terms-modal ul li { margin-bottom: 10px; }
-
-
-/* --- 5. RESPONSIVIDADE (CELULAR) --- */
-/* --- 5. RESPONSIVIDADE (CELULAR) --- */
+/* --- MOBILE --- */
 @media (max-width: 768px) {
-    .casino-sign h1 { font-size: 3rem; margin-top: 20px; }
-    
     .game-layout {
         flex-direction: column;
-        height: auto; /* Deixa a altura livre para rolar */
-        
-        /* AQUI ESTÁ A CORREÇÃO: Aumentei para 250px */
-        padding-bottom: 250px; 
-        
-        justify-content: flex-start;
+        align-items: center;
         gap: 15px;
+        /* SEM PADDING GIGANTE - VOLTA AO NORMAL */
     }
-
-    .machine-container { max-width: 250px; margin-top: 10px; }
-    .card-frame { width: 100%; max-width: 400px; padding: 15px; }
-    .card-grid { gap: 8px; }
-    .grid-item { font-size: 1.2rem; }
-    .timer-box { font-size: 1.5rem; margin-top: 5px; }
-    .vegas-header { padding: 0 15px; }
-}/
-
-
-/* --- 6. RODAPÉ DE SEGURANÇA (ESTILOS FINAIS) --- */
-.legal-footer {
-    position: fixed; 
-    bottom: 0; 
-    left: 0;
-    width: 100%;
-    background: rgba(5, 5, 5, 0.98);
-    border-top: 1px solid #333;
-    padding: 10px 0;
-    text-align: center;
-    font-size: 0.75rem;
-    color: #888;
-    z-index: 1000;
-    font-family: 'Roboto', sans-serif;
+    .machine-container { max-width: 180px; } /* Globo menor no celular */
+    .timer-box { font-size: 1.2rem; }
+    .card-frame { padding: 8px; width: 100%; }
+    .grid-item { font-size: 1.1rem; }
 }
-
-.legal-footer p { 
-    margin: 4px 0; 
-    line-height: 1.4; 
-}
-
-.safe-badge {
-    background: #2ecc71; 
-    color: #000;
-    padding: 3px 8px; 
-    border-radius: 4px;
-    font-weight: bold; 
-    font-size: 0.7rem;
-    display: inline-block; 
-    margin-bottom: 5px;
-    box-shadow: 0 0 5px rgba(46, 204, 113, 0.4);
-}
-
-.dev-credits {
-    font-size: 0.65rem;
-    opacity: 0.6;
-    margin-top: 5px;
-}
-
