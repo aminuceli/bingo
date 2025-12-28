@@ -1,29 +1,33 @@
 const socket = io();
 
-// --- 1. CONFIGURAÇÃO DE ÁUDIO E MÚSICA ---
-
-// Efeitos Sonoros
+// --- CONFIGURAÇÃO DE ÁUDIO ---
+// Caminhos dos arquivos (certifique-se que eles existem na pasta static/sounds)
 const audioSpin = new Audio('/static/sounds/spin.mp3');
 const audioPop = new Audio('/static/sounds/pop.mp3');
 const audioWin = new Audio('/static/sounds/win.mp3');
 const audioClick = new Audio('/static/sounds/click.mp3');
 
-// Música de Fundo (Jazz/Lounge)
-const bgMusic = new Audio('/static/sounds/music.mp3');
-bgMusic.loop = true;   // Repetir para sempre
-bgMusic.volume = 0.2;  // Volume baixo (20%) para não atrapalhar
+// Configurações de volume (0.0 a 1.0)
+audioSpin.volume = 0.5;
+audioSpin.loop = true; // O som do giro fica repetindo até parar
+audioWin.volume = 1.0;
 
-// Configuração dos Efeitos
-audioSpin.loop = true; // O barulho do globo girando deve ser contínuo
+
+// NOVO: Música de Fundo
+const bgMusic = new Audio('/static/sounds/music.mp3');
+bgMusic.loop = true;   // Toca para sempre
+bgMusic.volume = 0.2;  // Volume baixo (20%) para não atrapalhar a voz
+
+// Configurações de volume dos efeitos
 audioSpin.volume = 0.5;
 audioWin.volume = 1.0;
 
-// Função: Ligar/Desligar Música (Botão no Topo)
+// Função para Ligar/Desligar Música
 function toggleMusic() {
     const btn = document.getElementById('btn-music');
     
     if (bgMusic.paused) {
-        bgMusic.play().catch(e => console.log("Erro ao tocar música: ", e));
+        bgMusic.play().catch(e => console.log("Erro auto-play"));
         btn.innerHTML = "🎵 ON";
         btn.classList.remove('music-off');
     } else {
@@ -33,40 +37,26 @@ function toggleMusic() {
     }
 }
 
-// Função: Narrador (Voz do Navegador)
+// Função para o Computador FALAR o número
 function narrarNumero(num) {
     if ('speechSynthesis' in window) {
-        // Cancela falas anteriores para não acumular
-        window.speechSynthesis.cancel();
-        
         const msg = new SpeechSynthesisUtterance();
         msg.text = `Número ${num}`;
-        msg.lang = 'pt-BR'; 
-        msg.rate = 1.2; // Um pouco mais rápido
+        msg.lang = 'pt-BR'; // Português do Brasil
+        msg.rate = 1.1; // Velocidade um pouco mais rápida
+        msg.pitch = 1;  // Tom de voz normal
         window.speechSynthesis.speak(msg);
     }
 }
 
-// --- 2. VARIÁVEIS GLOBAIS ---
-let curRoom = "";
-let myName = "";
-let myCard = [];
-let marked = new Set();
-let drawnHist = [];
-let timerInt;
+// --- VARIÁVEIS DO JOGO ---
+let curRoom = "", myName = "", myCard = [], marked = new Set(), drawnHist = [], timerInt;
 
-
-// --- 3. LOBBY E CONEXÃO ---
-
-// Atualiza a lista de salas disponíveis
+// --- LOBBY ---
 socket.on('room_list_update', (data) => {
     const list = document.getElementById('rooms-list');
     list.innerHTML = "";
-    
-    if (!data.rooms.length) {
-        list.innerHTML = "<p style='text-align:center;color:#666'>Sem salas ativas.</p>";
-        return;
-    }
+    if (!data.rooms.length) list.innerHTML = "<p style='text-align:center;color:#666'>Sem salas ativas.</p>";
     
     data.rooms.forEach(r => {
         const div = document.createElement('div');
@@ -78,7 +68,6 @@ socket.on('room_list_update', (data) => {
             <span>👤 ${r.count}/${r.limit}</span>
         `;
         
-        // Só permite clicar se não estiver cheia e o jogo não tiver começado
         if (!isFull && !r.active) {
             div.onclick = () => { 
                 document.getElementById('room_id').value = r.id;
@@ -89,159 +78,131 @@ socket.on('room_list_update', (data) => {
     });
 });
 
-// Entrar na Sala
 function joinRoom() {
     myName = document.getElementById('username').value.trim();
     const rid = document.getElementById('room_id').value.trim();
     const limit = document.getElementById('max_players').value;
 
-    if (!myName || !rid) return alert("Preencha seu apelido e o nome da sala!");
+    if (!myName || !rid) return alert("Preencha nome e sala!");
     
-    // Feedback sonoro
+    // Tocar som de clique
     audioClick.play().catch(e => {});
 
-    // Tenta iniciar a música caso o usuário tenha pulado o modal
-    if (bgMusic.paused) {
-        bgMusic.play().catch(e => console.log("Aguardando interação para música"));
-    }
+    // INICIAR MÚSICA DE FUNDO AQUI
+    // (Navegadores só deixam tocar som após um clique do usuário, então aqui é o lugar perfeito)
+    bgMusic.play().catch(e => console.log("Navegador bloqueou música automática"));
 
-    // Envia comando para o servidor
     socket.emit('create_join_room', { 
         username: myName, 
         room_id: rid,
         limit: limit 
     });
 }
+socket.on('error_msg', (d) => document.getElementById('error-msg').innerText = d.msg);
 
-// Resposta: Erro ao entrar
-socket.on('error_msg', (d) => {
-    document.getElementById('error-msg').innerText = d.msg;
-    // Limpa a mensagem de erro depois de 3 segundos
-    setTimeout(() => document.getElementById('error-msg').innerText = "", 3000);
-});
-
-// Resposta: Sucesso ao entrar
 socket.on('room_joined', (d) => {
-    curRoom = d.room_id; 
-    myCard = d.card;
+    curRoom = d.room_id; myCard = d.card;
     
-    // Troca a tela (Esconde Lobby -> Mostra Jogo)
     document.getElementById('lobby-screen').classList.remove('active');
     document.getElementById('game-screen').classList.add('active');
-    
-    // Preenche informações do topo
     document.getElementById('display-room').innerText = curRoom;
     document.getElementById('room-limit').innerText = d.limit;
     
-    // Se for o Admin (primeiro a entrar), mostra botão de iniciar
     if (d.is_admin) {
         document.getElementById('btn-start').classList.remove('hidden');
     }
     
     document.getElementById('waiting-msg').classList.remove('hidden');
-    renderCard(); // Desenha a cartela
+    renderCard();
 });
 
-
-// --- 4. LÓGICA DO JOGO ---
-
+// --- JOGO ---
 function startGame() { 
     audioClick.play();
     socket.emit('start_game_cmd', { room_id: curRoom }); 
 }
 
-// O Jogo Começou (preparação)
 socket.on('game_started', () => {
     document.getElementById('btn-start').classList.add('hidden');
     document.getElementById('waiting-msg').classList.add('hidden');
     
-    // Reseta variáveis visuais
-    drawnHist = []; 
-    marked.clear();
+    drawnHist = []; marked.clear();
     document.querySelectorAll('.grid-item').forEach(e => e.classList.remove('marked'));
     document.getElementById('score-text').innerText = "0/20";
     document.getElementById('progress-fill').style.width = "0%";
     
     document.getElementById('ticker-content').innerHTML = "🎲 O SORTEIO COMEÇOU! BOA SORTE! 🎲";
-    
-    // Contagem regressiva visual inicial
-    startTimer(3); 
+    startTimer(20);
 });
 
-// FASE 1: Girando o Globo
+// 1. EVENTO GIRAR
 socket.on('spinning_start', () => {
     // Visual
     document.getElementById('globe-img').classList.add('shaking');
     document.getElementById('current-ball').classList.add('hidden');
-    
     const t = document.getElementById('timer'); 
-    t.innerText = "GIRANDO..."; 
+    t.innerText = "GIRANDO"; 
     t.classList.add('timer-active');
 
-    // Áudio
+    // Áudio: Toca o som de giro em loop
     audioSpin.currentTime = 0;
-    audioSpin.play().catch(e => {});
+    audioSpin.play().catch(e => console.log("Áudio bloqueado navegador"));
 });
 
-// FASE 2: Bola Sorteada
+// 2. EVENTO BOLA SAIU
 socket.on('number_drawn', (d) => {
-    // Para o efeito de giro
+    // Visual
     document.getElementById('globe-img').classList.remove('shaking');
     document.getElementById('timer').classList.remove('timer-active');
-    audioSpin.pause();
-    
-    // Toca som POP e mostra bola
-    audioPop.currentTime = 0;
-    audioPop.play();
     
     const b = document.getElementById('current-ball');
     document.getElementById('ball-number').innerText = d.number;
     
-    // Narração (com pequeno atraso para não cobrir o POP)
-    setTimeout(() => narrarNumero(d.number), 600);
+    // Áudio: Para o giro e toca o POP
+    audioSpin.pause();
+    audioPop.currentTime = 0;
+    audioPop.play();
+    
+    // FALAR O NÚMERO (Voz do Navegador)
+    // Pequeno delay para não sobrepor o som de "Pop"
+    setTimeout(() => narrarNumero(d.number), 500);
 
-    // Animação CSS da bola aparecendo
+    // Animação CSS
     b.classList.remove('hidden'); 
     b.classList.remove('ball-enter'); 
-    void b.offsetWidth; // Truque para reiniciar animação CSS
+    void b.offsetWidth; 
     b.classList.add('ball-enter');
     
-    // Atualiza histórico no rodapé
+    // Ticker
     drawnHist.push(`<div class="ticker-ball">${d.number}</div>`);
     document.getElementById('ticker-content').innerHTML = drawnHist.join("");
-    
-    // Inicia timer para a próxima bola (8 segundos)
-    startTimer(8);
+    startTimer(16);
 });
 
-// FASE 3: Fim de Jogo (Bingo!)
+// 3. EVENTO FIM DE JOGO
 socket.on('game_over', (d) => {
-    audioSpin.pause(); // Garante que o giro parou
+    // Áudio de Vitória
+    audioSpin.pause(); // Garante que parou
     audioWin.currentTime = 0;
     audioWin.play();
 
+    // Visual
     document.getElementById('winner-name').innerText = d.winner;
     document.getElementById('winner-modal').style.display = 'flex';
-    
     clearInterval(timerInt);
 });
 
-
-// --- 5. FUNÇÕES AUXILIARES ---
-
-// Renderiza a Cartela no HTML
+// --- AUXILIARES ---
 function renderCard() {
-    const g = document.getElementById('bingo-card'); 
-    g.innerHTML = ""; // Limpa cartela anterior
-    
+    const g = document.getElementById('bingo-card'); g.innerHTML = "";
     myCard.forEach(n => {
         const d = document.createElement('div'); 
         d.className = 'grid-item'; 
         d.innerText = n; 
         d.id = `n-${n}`;
         
-        // Clique no número
         d.onclick = () => {
+            // Som de clique satisfatório
             audioClick.currentTime = 0;
             audioClick.play();
 
@@ -253,58 +214,36 @@ function renderCard() {
                 d.classList.add('marked'); 
             }
             
-            // Atualiza progresso
             document.getElementById('score-text').innerText = `${marked.size}/20`;
             document.getElementById('progress-fill').style.width = `${(marked.size/20)*100}%`;
             
-            // Verifica vitória AUTOMATICAMENTE ao clicar
-            if(marked.size === 20) {
-                socket.emit('bingo_shout', { room_id: curRoom, marked: Array.from(marked) });
-            }
+            if(marked.size === 20) socket.emit('bingo_shout', { room_id: curRoom, marked: Array.from(marked) });
         };
         g.appendChild(d);
     });
 }
 
-// Timer visual simples
 function startTimer(s) {
     clearInterval(timerInt);
-    let t = s; 
-    const el = document.getElementById('timer');
-    el.innerText = t + "s";
-    
+    let t = s; document.getElementById('timer').innerText = t + "s";
     timerInt = setInterval(() => { 
         t--; 
-        if(t>=0) el.innerText = t + "s"; 
+        if(t>=0) document.getElementById('timer').innerText = t + "s"; 
         else clearInterval(timerInt); 
     }, 1000);
 }
 
-// Atualiza lista de jogadores na sala
 socket.on('update_players', (d) => {
     document.getElementById('player-count').innerText = d.count;
     document.getElementById('room-limit').innerText = d.limit;
-    
-    const ul = document.getElementById('players-ul'); 
-    ul.innerHTML = "";
-    
-    d.players.forEach(p => {
-        // Se for o meu nome, pinta de dourado
-        const color = p === myName ? '#ffd700' : '#fff';
-        ul.innerHTML += `<li style="padding:10px;border-bottom:1px solid #333;color:${color}">${p}</li>`;
-    });
+    const ul = document.getElementById('players-ul'); ul.innerHTML = "";
+    d.players.forEach(p => ul.innerHTML += `<li style="padding:10px;border-bottom:1px solid #333;color:${p===myName?'#ffd700':'#fff'}">${p}</li>`);
 });
 
-// Menu Dropdown de Jogadores
 function togglePlayerList() { 
     audioClick.play();
     const e = document.getElementById('player-dropdown'); 
-    e.style.display = e.style.display === 'block' ? 'none' : 'block'; 
+    e.style.display = e.style.display==='block'?'none':'block'; 
 }
 
-// Fecha dropdown ao clicar fora
-window.onclick = (e) => { 
-    if(!e.target.closest('.players-info')) {
-        document.getElementById('player-dropdown').style.display = 'none'; 
-    }
-}
+window.onclick = (e) => { if(!e.target.closest('.players-info')) document.getElementById('player-dropdown').style.display = 'none'; }
