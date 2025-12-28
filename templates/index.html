@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bingo da Família</title>
+    <title>Bingo Vegas Royale</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Roboto:wght@400;900&family=Courier+Prime:wght@700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
@@ -12,7 +12,7 @@
 
     <div id="lobby-screen" class="screen active">
         <div class="casino-sign">
-            <h1>🎰 BINGO DA FAMÍLIA 🎰</h1>
+            <h1>🎰 BINGO VEGAS 🎰</h1>
         </div>
         
         <div class="lobby-container">
@@ -28,7 +28,7 @@
                 <small style="color:#888; margin-bottom:10px;">(O jogo inicia ao completar)</small>
 
                 <button onclick="joinRoom()" class="btn-gold">ENTRAR NA MESA</button>
-                <p id="error-msg" class="error" style="color:red; margin-top:5px;"></p>
+                <p id="error-msg" class="error"></p>
             </div>
 
             <div class="rooms-panel vegas-border">
@@ -38,23 +38,15 @@
                 </div>
             </div>
         </div>
-
-        <footer class="legal-footer">
-            <span class="safe-badge">🛡️ JOGO SEGURO</span>
-            <p>
-                <strong>Simulador Familiar.</strong> Software exclusivo para entretenimento.<br>
-                <span style="color: #ff5e5e;">Proibido uso para apostas reais ou fins comerciais.</span>
-            </p>
-            <p style="opacity:0.5; font-size:0.7rem; margin-top:5px;">Criado com ❤️ para Família & Amigos</p>
-        </footer>
     </div>
 
     <div id="game-screen" class="screen">
         <header class="vegas-header">
             <div class="room-info">SALA: <span id="display-room">--</span></div>
             
-            <button id="btn-music" onclick="toggleMusic()" class="music-toggle">🎵 ON</button>
-
+            <button id="btn-music" onclick="toggleMusic()" class="music-toggle">
+            🎵 ON
+            </button>
             <div class="players-info" onclick="togglePlayerList()">
                 👥 <span id="player-count">0</span>/<span id="room-limit">20</span>
                 <div id="player-dropdown" class="dropdown-content">
@@ -73,16 +65,16 @@
                 </div>
 
                 <div class="timer-box">
-                    PRÓXIMA:<br>
+                    PRÓXIMA BOLA:<br>
                     <span id="timer">--</span>
                 </div>
                 
-                <button id="btn-start" class="btn-start hidden" onclick="startGame()">▶ INICIAR</button>
-                <div id="waiting-msg" class="waiting-text hidden">AGUARDANDO...</div>
+                <button id="btn-start" class="btn-start hidden" onclick="startGame()">▶ INICIAR AGORA</button>
+                <div id="waiting-msg" class="waiting-text hidden">AGUARDANDO JOGADORES...</div>
             </section>
 
             <section class="stage-right">
-                <div class="card-frame">
+                <div class="card-frame vegas-border">
                     <h2 class="card-title">SUA CARTELA</h2>
                     <div class="progress-bar"><div id="progress-fill"></div></div>
                     <div id="score-text">AGUARDANDO INÍCIO...</div>
@@ -90,11 +82,21 @@
                 </div>
             </section>
         </main>
+
+        <footer class="ticker-wrap">
+            <div class="ticker-heading">HISTÓRICO:</div>
+            <div class="ticker">
+                <div id="ticker-content" class="ticker__item">
+                    🛡️ JOGO SEGURO: PROIBIDO APOSTAS REAIS - DIVERSÃO FAMILIAR APENAS 🛡️
+                </div>
+            </div>
+        </footer>
     </div>
 
     <div id="winner-modal" class="modal">
         <div class="modal-content winner-box">
-            <h1 style="color:var(--gold); font-size:3rem; margin:0;">BINGO!</h1>
+            <div class="lights-container"></div>
+            <h1 class="jackpot-text">BINGO!</h1>
             <p>TEMOS UM VENCEDOR</p>
             <div class="winner-name-display">
                 <span id="winner-name">NOME</span>
@@ -104,27 +106,29 @@
     </div>
 
     <div id="terms-modal" class="modal" style="display:flex;">
-        <div class="modal-content" style="max-width: 350px;">
+        <div class="modal-content winner-box" style="border-color: var(--neon-blue); max-width: 400px;">
             <h2 style="color: var(--gold); margin-top:0;">🎲 MODO DIVERSÃO</h2>
             <p style="font-size: 1rem; line-height: 1.5;">
-                Jogo <strong>GRATUITO</strong> para amigos e família.
+                Este é um jogo <strong>GRATUITO</strong> feito para jogar com amigos e família.
             </p>
             <ul style="text-align: left; color: #ccc; font-size: 0.9rem; margin: 15px 0;">
-                <li>🚫 Proibido Apostas em Dinheiro</li>
-                <li>🚫 Proibido "Bancas"</li>
-                <li>✅ Só Diversão</li>
+                <li>🚫 Proibido apostar Dinheiro Real</li>
+                <li>🚫 Proibido uso por "Bancas"</li>
+                <li>✅ Permitido apenas risadas e diversão</li>
             </ul>
             <button onclick="acceptTerms()" class="btn-gold" style="width:100%;">CONCORDO, VAMOS JOGAR!</button>
         </div>
     </div>
 
     <script>
+        // Script simples para fechar o modal
         function acceptTerms() {
             document.getElementById('terms-modal').style.display = 'none';
+            // Toca a música se o navegador permitir e ela já tiver sido carregada
             if(typeof bgMusic !== 'undefined') bgMusic.play().catch(e=>{});
         }
     </script>
-    
+
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
