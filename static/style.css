@@ -1,310 +1,410 @@
-const socket = io();
+/* --- 1. CONFIGURAÇÕES GERAIS E VARIÁVEIS --- */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Roboto:wght@400;900&family=Courier+Prime:wght@700&display=swap');
 
-// --- 1. CONFIGURAÇÃO DE ÁUDIO E MÚSICA ---
+:root {
+    --gold: #ffd700;
+    --gold-dim: #b39700;
+    --red: #c0392b;
+    --dark-bg: #0a0a0a;
+    --panel-bg: rgba(20, 20, 20, 0.95);
+    --neon-blue: #00f3ff;
+}
 
-// Efeitos Sonoros
-const audioSpin = new Audio('/static/sounds/spin.mp3');
-const audioPop = new Audio('/static/sounds/pop.mp3');
-const audioWin = new Audio('/static/sounds/win.mp3');
-const audioClick = new Audio('/static/sounds/click.mp3');
+* { box-sizing: border-box; }
 
-// Música de Fundo (Jazz/Lounge)
-const bgMusic = new Audio('/static/sounds/music.mp3');
-bgMusic.loop = true;   // Repetir para sempre
-bgMusic.volume = 0.2;  // Volume baixo (20%) para não atrapalhar
+body {
+    margin: 0;
+    font-family: 'Roboto', sans-serif;
+    background-color: var(--dark-bg);
+    background-image: radial-gradient(circle at center, #1a1a1a 0%, #000 100%);
+    color: white;
+    height: 100vh;
+    overflow: hidden; /* Evita barra de rolagem dupla */
+}
 
-// Configuração dos Efeitos
-audioSpin.loop = true; // O barulho do globo girando deve ser contínuo
-audioSpin.volume = 0.5;
-audioWin.volume = 1.0;
+/* Esconde telas inativas */
+.screen { display: none; height: 100vh; flex-direction: column; }
+.screen.active { display: flex; }
 
-// Função: Ligar/Desligar Música (Botão no Topo)
-function toggleMusic() {
-    const btn = document.getElementById('btn-music');
+.hidden { display: none !important; }
+
+/* --- 2. TELA DE LOBBY (ENTRADA) --- */
+#lobby-screen {
+    justify-content: center;
+    align-items: center;
+    background: url('https://www.transparenttextures.com/patterns/black-felt.png'), linear-gradient(135deg, #111, #220000);
+}
+
+.casino-sign h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 4rem;
+    color: var(--gold);
+    text-shadow: 0 0 10px var(--gold), 0 0 20px var(--red);
+    margin-bottom: 30px;
+    letter-spacing: 3px;
+    text-align: center;
+}
+
+.lobby-container {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.vegas-border {
+    border: 2px solid var(--gold);
+    border-radius: 15px;
+    background: var(--panel-bg);
+    box-shadow: 0 0 15px var(--gold-dim), inset 0 0 20px #000;
+    padding: 20px;
+}
+
+.login-panel {
+    display: flex;
+    flex-direction: column;
+    width: 300px;
+    text-align: center;
+}
+
+.login-panel input {
+    background: #333;
+    border: 1px solid #555;
+    color: var(--gold);
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    font-size: 1rem;
+    text-align: center;
+}
+
+.limit-selector {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+    color: #ccc;
+}
+.limit-selector input { width: 60px; margin: 0; }
+
+.rooms-panel {
+    width: 300px;
+    height: 350px;
+    display: flex;
+    flex-direction: column;
+}
+
+.rooms-grid {
+    overflow-y: auto;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.room-btn {
+    background: #151515;
+    padding: 12px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    color: #aaa;
+    border: 1px solid #333;
+    border-radius: 5px;
+    font-size: 0.9rem;
+    transition: 0.2s;
+}
+.room-btn:hover { border-color: var(--gold); color: white; background: #222; }
+.room-btn.full { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
+
+/* Botão Dourado Padrão */
+.btn-gold {
+    background: linear-gradient(180deg, #ffd700, #b8860b);
+    border: none;
+    color: #000;
+    font-weight: bold;
+    padding: 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    margin-top: 10px;
+    transition: transform 0.1s;
+}
+.btn-gold:hover { transform: scale(1.02); box-shadow: 0 0 15px var(--gold); }
+.btn-gold:active { transform: scale(0.98); }
+
+
+/* --- 3. TELA DO JOGO --- */
+.vegas-header {
+    background: #111;
+    border-bottom: 2px solid var(--gold);
+    padding: 10px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 60px;
+}
+
+.room-info { font-family: 'Courier Prime', monospace; color: var(--gold); font-size: 1.2rem; }
+
+/* Botão de Música */
+.music-toggle {
+    background: transparent;
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    padding: 5px 15px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: bold;
+    transition: 0.2s;
+}
+.music-toggle:hover { background: rgba(255, 215, 0, 0.1); box-shadow: 0 0 10px var(--gold-dim); }
+.music-off { border-color: #555; color: #555; text-decoration: line-through; }
+
+/* Dropdown de Jogadores */
+.players-info { cursor: pointer; position: relative; font-size: 1.1rem; }
+.players-info:hover { color: var(--gold); }
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 100%;
+    background: #111;
+    border: 1px solid var(--gold);
+    width: 200px;
+    z-index: 200;
+    border-radius: 0 0 10px 10px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.8);
+}
+.dropdown-content ul { list-style: none; padding: 0; margin: 0; max-height: 200px; overflow-y: auto; }
+
+/* Layout Principal do Jogo */
+.game-layout {
+    display: flex;
+    height: calc(100vh - 60px); /* Tira altura do header */
+    justify-content: center;
+    align-items: center;
+    gap: 50px;
+    padding: 20px;
+    overflow-y: auto; /* Permite rolagem se a tela for pequena */
+}
+
+/* Lado Esquerdo (Máquina) */
+.stage-left {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 300px;
+}
+
+.machine-container { position: relative; width: 100%; max-width: 300px; text-align: center; }
+
+#globe-img { width: 100%; transition: transform 0.1s; }
+.shaking { animation: shake 0.5s infinite; }
+@keyframes shake { 0% { transform: translate(1px, 1px) rotate(0deg); } 25% { transform: translate(-1px, -2px) rotate(-1deg); } 75% { transform: translate(-1px, 2px) rotate(-1deg); } 100% { transform: translate(1px, -1px) rotate(0deg); } }
+
+.ball-display {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100px; height: 100px;
+    background: radial-gradient(circle at 30% 30%, #fff, #ddd);
+    border-radius: 50%;
+    display: flex; justify-content: center; align-items: center;
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    border: 2px solid #333;
+    color: #000;
+    font-weight: 900;
+    font-size: 3rem;
+    font-family: 'Arial', sans-serif;
+}
+.ball-enter { animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+@keyframes popIn { 0% { transform: translate(-50%, -50%) scale(0); opacity: 0; } 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; } }
+
+.timer-box {
+    margin-top: 20px;
+    font-family: 'Courier Prime', monospace;
+    font-size: 2rem;
+    text-align: center;
+    color: var(--neon-blue);
+    text-shadow: 0 0 10px var(--neon-blue);
+}
+.timer-active { color: var(--red); text-shadow: 0 0 10px var(--red); }
+
+.btn-start {
+    background: #27ae60;
+    border: none; color: white;
+    padding: 10px 20px;
+    font-size: 1.2rem;
+    border-radius: 50px;
+    margin-top: 20px;
+    cursor: pointer;
+    box-shadow: 0 0 10px #27ae60;
+    font-weight: bold;
+    animation: pulse 2s infinite;
+}
+@keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(39, 174, 96, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(39, 174, 96, 0); } 100% { box-shadow: 0 0 0 0 rgba(39, 174, 96, 0); } }
+
+.waiting-text { margin-top: 15px; color: #aaa; animation: blink 1.5s infinite; }
+@keyframes blink { 50% { opacity: 0.3; } }
+
+
+/* Lado Direito (Cartela) */
+.stage-right { display: flex; flex-direction: column; align-items: center; }
+
+.card-frame {
+    background: #fff;
+    border: 10px solid var(--gold);
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 0 30px rgba(0,0,0,0.8);
+    width: 400px;
+}
+
+.card-title {
+    color: #000;
+    text-align: center;
+    margin: 0 0 10px 0;
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    text-transform: uppercase;
+    border-bottom: 2px solid #ccc;
+    padding-bottom: 5px;
+}
+
+.progress-bar { width: 100%; height: 10px; background: #eee; border-radius: 5px; overflow: hidden; margin-bottom: 5px; }
+#progress-fill { height: 100%; background: var(--red); width: 0%; transition: width 0.5s; }
+#score-text { text-align: center; color: #555; font-size: 0.9rem; margin-bottom: 15px; font-weight: bold; }
+
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+}
+
+.grid-item {
+    background: #eee;
+    color: #333;
+    aspect-ratio: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: 900;
+    font-size: 1.5rem;
+    border-radius: 5px;
+    cursor: pointer;
+    border: 2px solid #ddd;
+    transition: 0.1s;
+    user-select: none;
+}
+.grid-item:hover { background: #ddd; }
+.grid-item.marked {
+    background: var(--red);
+    color: white;
+    border-color: #a93226;
+    transform: scale(0.95);
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.3);
+}
+
+
+/* --- 4. MODAIS (JANELAS FLUTUANTES) --- */
+.modal {
+    display: none;
+    position: fixed; z-index: 2000;
+    left: 0; top: 0;
+    width: 100%; height: 100%;
+    background-color: rgba(0,0,0,0.9);
+    justify-content: center; align-items: center;
+    backdrop-filter: blur(5px);
+}
+
+.modal-content {
+    background: #111;
+    border: 4px solid var(--gold);
+    padding: 40px;
+    text-align: center;
+    border-radius: 20px;
+    box-shadow: 0 0 50px var(--gold);
+    position: relative;
+    max-width: 90%;
+}
+
+.jackpot-text {
+    font-size: 4rem; color: var(--gold);
+    margin: 0; font-family: 'Playfair Display', serif;
+    animation: textGlow 1s infinite alternate;
+}
+@keyframes textGlow { from { text-shadow: 0 0 10px var(--gold); } to { text-shadow: 0 0 30px var(--gold), 0 0 50px white; } }
+
+.winner-name-display {
+    font-size: 2.5rem; color: white;
+    margin-top: 20px; font-weight: bold;
+    text-transform: uppercase;
+}
+
+/* Modal de Termos (Modo Diversão) */
+#terms-modal ul li { margin-bottom: 10px; }
+
+
+/* --- 5. RESPONSIVIDADE (CELULAR) --- */
+@media (max-width: 768px) {
+    .casino-sign h1 { font-size: 3rem; margin-top: 20px; }
     
-    if (bgMusic.paused) {
-        bgMusic.play().catch(e => console.log("Erro ao tocar música: ", e));
-        btn.innerHTML = "🎵 ON";
-        btn.classList.remove('music-off');
-    } else {
-        bgMusic.pause();
-        btn.innerHTML = "🔇 OFF";
-        btn.classList.add('music-off');
+    .game-layout {
+        flex-direction: column;
+        height: auto;
+        padding-bottom: 120px; /* IMPORTANTE: Espaço para o rodapé */
+        justify-content: flex-start;
+        gap: 15px;
     }
+
+    .machine-container { max-width: 250px; margin-top: 10px; }
+    .card-frame { width: 100%; max-width: 400px; padding: 15px; }
+    .card-grid { gap: 8px; }
+    .grid-item { font-size: 1.2rem; }
+    .timer-box { font-size: 1.5rem; margin-top: 5px; }
+    .vegas-header { padding: 0 15px; }
+} /* <--- ESTA CHAVE FECHA O MODO CELULAR */
+
+
+/* --- 6. RODAPÉ DE SEGURANÇA (ESTILOS FINAIS) --- */
+.legal-footer {
+    position: fixed; 
+    bottom: 0; 
+    left: 0;
+    width: 100%;
+    background: rgba(5, 5, 5, 0.98);
+    border-top: 1px solid #333;
+    padding: 10px 0;
+    text-align: center;
+    font-size: 0.75rem;
+    color: #888;
+    z-index: 1000;
+    font-family: 'Roboto', sans-serif;
 }
 
-// Função: Narrador (Voz do Navegador)
-function narrarNumero(num) {
-    if ('speechSynthesis' in window) {
-        // Cancela falas anteriores para não acumular
-        window.speechSynthesis.cancel();
-        
-        const msg = new SpeechSynthesisUtterance();
-        msg.text = `Número ${num}`;
-        msg.lang = 'pt-BR'; 
-        msg.rate = 1.2; // Um pouco mais rápido
-        window.speechSynthesis.speak(msg);
-    }
+.legal-footer p { 
+    margin: 4px 0; 
+    line-height: 1.4; 
 }
 
-// --- 2. VARIÁVEIS GLOBAIS ---
-let curRoom = "";
-let myName = "";
-let myCard = [];
-let marked = new Set();
-let drawnHist = [];
-let timerInt;
-
-
-// --- 3. LOBBY E CONEXÃO ---
-
-// Atualiza a lista de salas disponíveis
-socket.on('room_list_update', (data) => {
-    const list = document.getElementById('rooms-list');
-    list.innerHTML = "";
-    
-    if (!data.rooms.length) {
-        list.innerHTML = "<p style='text-align:center;color:#666'>Sem salas ativas.</p>";
-        return;
-    }
-    
-    data.rooms.forEach(r => {
-        const div = document.createElement('div');
-        const isFull = r.count >= r.limit;
-        
-        div.className = isFull ? 'room-btn full' : 'room-btn';
-        div.innerHTML = `
-            <span><strong style="color:#ffd700">${r.id}</strong> <small>${r.active ? '(JOGANDO)' : ''}</small></span>
-            <span>👤 ${r.count}/${r.limit}</span>
-        `;
-        
-        // Só permite clicar se não estiver cheia e o jogo não tiver começado
-        if (!isFull && !r.active) {
-            div.onclick = () => { 
-                document.getElementById('room_id').value = r.id;
-                joinRoom(); 
-            };
-        }
-        list.appendChild(div);
-    });
-});
-
-// Entrar na Sala
-function joinRoom() {
-    myName = document.getElementById('username').value.trim();
-    const rid = document.getElementById('room_id').value.trim();
-    const limit = document.getElementById('max_players').value;
-
-    if (!myName || !rid) return alert("Preencha seu apelido e o nome da sala!");
-    
-    // Feedback sonoro
-    audioClick.play().catch(e => {});
-
-    // Tenta iniciar a música caso o usuário tenha pulado o modal
-    if (bgMusic.paused) {
-        bgMusic.play().catch(e => console.log("Aguardando interação para música"));
-    }
-
-    // Envia comando para o servidor
-    socket.emit('create_join_room', { 
-        username: myName, 
-        room_id: rid,
-        limit: limit 
-    });
+.safe-badge {
+    background: #2ecc71; 
+    color: #000;
+    padding: 3px 8px; 
+    border-radius: 4px;
+    font-weight: bold; 
+    font-size: 0.7rem;
+    display: inline-block; 
+    margin-bottom: 5px;
+    box-shadow: 0 0 5px rgba(46, 204, 113, 0.4);
 }
 
-// Resposta: Erro ao entrar
-socket.on('error_msg', (d) => {
-    document.getElementById('error-msg').innerText = d.msg;
-    // Limpa a mensagem de erro depois de 3 segundos
-    setTimeout(() => document.getElementById('error-msg').innerText = "", 3000);
-});
-
-// Resposta: Sucesso ao entrar
-socket.on('room_joined', (d) => {
-    curRoom = d.room_id; 
-    myCard = d.card;
-    
-    // Troca a tela (Esconde Lobby -> Mostra Jogo)
-    document.getElementById('lobby-screen').classList.remove('active');
-    document.getElementById('game-screen').classList.add('active');
-    
-    // Preenche informações do topo
-    document.getElementById('display-room').innerText = curRoom;
-    document.getElementById('room-limit').innerText = d.limit;
-    
-    // Se for o Admin (primeiro a entrar), mostra botão de iniciar
-    if (d.is_admin) {
-        document.getElementById('btn-start').classList.remove('hidden');
-    }
-    
-    document.getElementById('waiting-msg').classList.remove('hidden');
-    renderCard(); // Desenha a cartela
-});
-
-
-// --- 4. LÓGICA DO JOGO ---
-
-function startGame() { 
-    audioClick.play();
-    socket.emit('start_game_cmd', { room_id: curRoom }); 
-}
-
-// O Jogo Começou (preparação)
-socket.on('game_started', () => {
-    document.getElementById('btn-start').classList.add('hidden');
-    document.getElementById('waiting-msg').classList.add('hidden');
-    
-    // Reseta variáveis visuais
-    drawnHist = []; 
-    marked.clear();
-    document.querySelectorAll('.grid-item').forEach(e => e.classList.remove('marked'));
-    document.getElementById('score-text').innerText = "0/20";
-    document.getElementById('progress-fill').style.width = "0%";
-    
-    document.getElementById('ticker-content').innerHTML = "🎲 O SORTEIO COMEÇOU! BOA SORTE! 🎲";
-    
-    // Contagem regressiva visual inicial
-    startTimer(3); 
-});
-
-// FASE 1: Girando o Globo
-socket.on('spinning_start', () => {
-    // Visual
-    document.getElementById('globe-img').classList.add('shaking');
-    document.getElementById('current-ball').classList.add('hidden');
-    
-    const t = document.getElementById('timer'); 
-    t.innerText = "GIRANDO..."; 
-    t.classList.add('timer-active');
-
-    // Áudio
-    audioSpin.currentTime = 0;
-    audioSpin.play().catch(e => {});
-});
-
-// FASE 2: Bola Sorteada
-socket.on('number_drawn', (d) => {
-    // Para o efeito de giro
-    document.getElementById('globe-img').classList.remove('shaking');
-    document.getElementById('timer').classList.remove('timer-active');
-    audioSpin.pause();
-    
-    // Toca som POP e mostra bola
-    audioPop.currentTime = 0;
-    audioPop.play();
-    
-    const b = document.getElementById('current-ball');
-    document.getElementById('ball-number').innerText = d.number;
-    
-    // Narração (com pequeno atraso para não cobrir o POP)
-    setTimeout(() => narrarNumero(d.number), 600);
-
-    // Animação CSS da bola aparecendo
-    b.classList.remove('hidden'); 
-    b.classList.remove('ball-enter'); 
-    void b.offsetWidth; // Truque para reiniciar animação CSS
-    b.classList.add('ball-enter');
-    
-    // Atualiza histórico no rodapé
-    drawnHist.push(`<div class="ticker-ball">${d.number}</div>`);
-    document.getElementById('ticker-content').innerHTML = drawnHist.join("");
-    
-    // Inicia timer para a próxima bola (8 segundos)
-    startTimer(8);
-});
-
-// FASE 3: Fim de Jogo (Bingo!)
-socket.on('game_over', (d) => {
-    audioSpin.pause(); // Garante que o giro parou
-    audioWin.currentTime = 0;
-    audioWin.play();
-
-    document.getElementById('winner-name').innerText = d.winner;
-    document.getElementById('winner-modal').style.display = 'flex';
-    
-    clearInterval(timerInt);
-});
-
-
-// --- 5. FUNÇÕES AUXILIARES ---
-
-// Renderiza a Cartela no HTML
-function renderCard() {
-    const g = document.getElementById('bingo-card'); 
-    g.innerHTML = ""; // Limpa cartela anterior
-    
-    myCard.forEach(n => {
-        const d = document.createElement('div'); 
-        d.className = 'grid-item'; 
-        d.innerText = n; 
-        d.id = `n-${n}`;
-        
-        // Clique no número
-        d.onclick = () => {
-            audioClick.currentTime = 0;
-            audioClick.play();
-
-            if(marked.has(n)) { 
-                marked.delete(n); 
-                d.classList.remove('marked'); 
-            } else { 
-                marked.add(n); 
-                d.classList.add('marked'); 
-            }
-            
-            // Atualiza progresso
-            document.getElementById('score-text').innerText = `${marked.size}/20`;
-            document.getElementById('progress-fill').style.width = `${(marked.size/20)*100}%`;
-            
-            // Verifica vitória AUTOMATICAMENTE ao clicar
-            if(marked.size === 20) {
-                socket.emit('bingo_shout', { room_id: curRoom, marked: Array.from(marked) });
-            }
-        };
-        g.appendChild(d);
-    });
-}
-
-// Timer visual simples
-function startTimer(s) {
-    clearInterval(timerInt);
-    let t = s; 
-    const el = document.getElementById('timer');
-    el.innerText = t + "s";
-    
-    timerInt = setInterval(() => { 
-        t--; 
-        if(t>=0) el.innerText = t + "s"; 
-        else clearInterval(timerInt); 
-    }, 1000);
-}
-
-// Atualiza lista de jogadores na sala
-socket.on('update_players', (d) => {
-    document.getElementById('player-count').innerText = d.count;
-    document.getElementById('room-limit').innerText = d.limit;
-    
-    const ul = document.getElementById('players-ul'); 
-    ul.innerHTML = "";
-    
-    d.players.forEach(p => {
-        // Se for o meu nome, pinta de dourado
-        const color = p === myName ? '#ffd700' : '#fff';
-        ul.innerHTML += `<li style="padding:10px;border-bottom:1px solid #333;color:${color}">${p}</li>`;
-    });
-});
-
-// Menu Dropdown de Jogadores
-function togglePlayerList() { 
-    audioClick.play();
-    const e = document.getElementById('player-dropdown'); 
-    e.style.display = e.style.display === 'block' ? 'none' : 'block'; 
-}
-
-// Fecha dropdown ao clicar fora
-window.onclick = (e) => { 
-    if(!e.target.closest('.players-info')) {
-        document.getElementById('player-dropdown').style.display = 'none'; 
-    }
+.dev-credits {
+    font-size: 0.65rem;
+    opacity: 0.6;
+    margin-top: 5px;
 }
