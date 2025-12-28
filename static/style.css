@@ -350,13 +350,17 @@ body {
 
 
 /* --- 5. RESPONSIVIDADE (CELULAR) --- */
+/* --- 5. RESPONSIVIDADE (CELULAR) --- */
 @media (max-width: 768px) {
     .casino-sign h1 { font-size: 3rem; margin-top: 20px; }
     
     .game-layout {
         flex-direction: column;
-        height: auto;
-        padding-bottom: 120px; /* IMPORTANTE: Espaço para o rodapé */
+        height: auto; /* Deixa a altura livre para rolar */
+        
+        /* AQUI ESTÁ A CORREÇÃO: Aumentei para 250px */
+        padding-bottom: 250px; 
+        
         justify-content: flex-start;
         gap: 15px;
     }
@@ -367,7 +371,7 @@ body {
     .grid-item { font-size: 1.2rem; }
     .timer-box { font-size: 1.5rem; margin-top: 5px; }
     .vegas-header { padding: 0 15px; }
-} /* <--- ESTA CHAVE FECHA O MODO CELULAR */
+}/
 
 
 /* --- 6. RODAPÉ DE SEGURANÇA (ESTILOS FINAIS) --- */
@@ -408,3 +412,4 @@ body {
     opacity: 0.6;
     margin-top: 5px;
 }
+
