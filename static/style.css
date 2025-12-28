@@ -269,11 +269,30 @@ input:focus { border-color: var(--gold); outline: none; }
     color: #555;
     text-decoration: line-through;
 }
+.legal-footer {
+    position: fixed; bottom: 0; width: 100%;
+    background: rgba(0, 0, 0, 0.95);
+    border-top: 1px solid #333;
+    padding: 10px;
+    text-align: center;
+    font-size: 0.75rem;
+    color: #888;
+    z-index: 1000;
+}
 
+.legal-footer p { margin: 3px 0; }
+
+.safe-badge {
+    background: #2ecc71; color: #000;
+    padding: 2px 6px; border-radius: 4px;
+    font-weight: bold; font-size: 0.7rem;
+    display: inline-block; margin-bottom: 5px;
+}
 
 }
 
 .rooms-grid { max-height: 200px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-right: 5px; }
 .room-btn { background: #151515; padding: 12px; cursor: pointer; display: flex; justify-content: space-between; color: #aaa; border: 1px solid #333; border-radius: 5px; font-size: 0.9rem; }
 .dropdown-content { display: none; position: absolute; right: 0; top: 100%; background: #111; border: 1px solid var(--gold); width: 200px; z-index: 100; border-radius: 0 0 10px 10px; }
+
 .hidden { display: none !important; }
