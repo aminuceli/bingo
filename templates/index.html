@@ -107,21 +107,30 @@
     </div>
 
     <script src="{{ url_for('static', filename='script.js') }}"></script>
-<footer class="legal-footer">
-        <div class="footer-content">
-            <span class="safe-badge">🛡️ JOGO SEGURO</span>
-            <p>
-                <strong>Simulador de Bingo Familiar.</strong> Este software foi desenvolvido exclusivamente para fins de 
-                entretenimento e programação. <br>
-                <span style="color: #ff5e5e;">É estritamente proibido o uso para apostas reais, jogos de azar ou fins comerciais.</span>
+<div id="terms-modal" class="modal" style="display:flex;">
+        <div class="modal-content winner-box" style="border-color: var(--neon-blue); max-width: 400px;">
+            <h2 style="color: var(--gold); margin-top:0;">🎲 MODO DIVERSÃO</h2>
+            <p style="font-size: 1rem; line-height: 1.5;">
+                Este é um jogo <strong>GRATUITO</strong> feito para jogar com amigos e família.
             </p>
-            <p class="dev-credits">Criado com ❤️ para a Família & Amigos</p>
+            <ul style="text-align: left; color: #ccc; font-size: 0.9rem; margin: 15px 0;">
+                <li>🚫 Proibido apostar Dinheiro Real</li>
+                <li>🚫 Proibido uso por "Bancas"</li>
+                <li>✅ Permitido apenas risadas e diversão</li>
+            </ul>
+            <button onclick="acceptTerms()" class="btn-gold" style="width:100%;">CONCORDO, VAMOS JOGAR!</button>
         </div>
-    </footer>
+    </div>
 
-    <div id="terms-modal" class="modal" style="display:flex;">
-        </div>
-
+    <script>
+        // Script simples para fechar o modal
+        function acceptTerms() {
+            document.getElementById('terms-modal').style.display = 'none';
+            // Toca a música se o navegador permitir e ela já tiver sido carregada
+            if(typeof bgMusic !== 'undefined') bgMusic.play().catch(e=>{});
+        }
+    </script>
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
+
