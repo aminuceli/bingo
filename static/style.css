@@ -1,251 +1,279 @@
-/* --- 1. CONFIGURAÇÕES GERAIS E VARIÁVEIS --- */
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Roboto:wght@400;900&family=Courier+Prime:wght@700&display=swap');
-
 :root {
-    --gold: #ffd700;
-    --gold-dim: #b39700;
-    --red: #c0392b;
-    --dark-bg: #0a0a0a;
-    --panel-bg: rgba(20, 20, 20, 0.95);
+    --gold: #ffcc00;
+    --gold-dim: #b8860b;
+    --neon-pink: #ff00ff;
     --neon-blue: #00f3ff;
+    --bg-dark: #050505;
+    --red-vegas: #e60000;
 }
-
-* { box-sizing: border-box; }
 
 body {
     margin: 0;
+    background: radial-gradient(circle at center, #3a0000 0%, #000000 90%);
     font-family: 'Roboto', sans-serif;
-    background-color: var(--dark-bg);
-    background-image: radial-gradient(circle at center, #1a1a1a 0%, #000 100%);
     color: white;
+    overflow-x: hidden; /* Evita rolagem lateral no celular */
     min-height: 100vh;
 }
 
-/* Telas */
-.screen { display: none; min-height: 100vh; flex-direction: column; }
-.screen.active { display: flex; }
-.hidden { display: none !important; }
-
-/* --- 2. TELA DE LOBBY --- */
-#lobby-screen {
-    justify-content: center;
-    align-items: center;
-    background: url('https://www.transparenttextures.com/patterns/black-felt.png'), linear-gradient(135deg, #111, #220000);
-    padding-bottom: 50px;
-}
-
-.casino-sign h1 {
-    font-family: 'Playfair Display', serif;
-    font-size: 4rem;
-    color: var(--gold);
-    text-shadow: 0 0 10px var(--gold), 0 0 20px var(--red);
-    margin-bottom: 30px;
-    letter-spacing: 3px;
-    text-align: center;
-}
-
-.lobby-container {
-    display: flex;
-    gap: 20px;
-    justify-content: center;
-    flex-wrap: wrap;
+/* --- ANIMAÇÃO DE BORDAS --- */
+@keyframes border-dance {
+    0% { background-position: 0% 0%; }
+    100% { background-position: 200% 0%; }
 }
 
 .vegas-border {
-    border: 2px solid var(--gold);
-    border-radius: 15px;
-    background: var(--panel-bg);
-    box-shadow: 0 0 15px var(--gold-dim), inset 0 0 20px #000;
-    padding: 20px;
+    position: relative;
+    border: 3px solid transparent;
+    background: #000; 
+    background-clip: padding-box;
+    box-shadow: 0 0 20px rgba(0,0,0,0.8);
 }
 
-.login-panel { display: flex; flex-direction: column; width: 300px; text-align: center; }
-.login-panel input { background: #333; border: 1px solid #555; color: var(--gold); padding: 10px; margin-bottom: 10px; border-radius: 5px; text-align: center; }
-.limit-selector { display: flex; justify-content: space-between; margin-bottom: 10px; color: #ccc; }
-.limit-selector input { width: 60px; }
+.vegas-border::after {
+    content: '';
+    position: absolute; top: -3px; bottom: -3px; left: -3px; right: -3px;
+    background: linear-gradient(90deg, var(--gold), #fff, var(--gold), #000, var(--gold), #fff, var(--gold));
+    background-size: 200% 100%;
+    z-index: -1;
+    border-radius: 12px;
+    animation: border-dance 4s linear infinite;
+    box-shadow: 0 0 15px var(--gold-dim);
+}
 
-.rooms-panel { width: 300px; height: 350px; display: flex; flex-direction: column; }
-.rooms-grid { overflow-y: auto; flex-grow: 1; display: flex; flex-direction: column; gap: 8px; }
+/* --- ESTRUTURA GERAL --- */
+.screen { display: none; height: 100%; width: 100%; flex-direction: column; }
+.screen.active { display: flex; }
 
-.room-btn { background: #151515; padding: 12px; cursor: pointer; display: flex; justify-content: space-between; color: #aaa; border: 1px solid #333; border-radius: 5px; }
-.room-btn:hover { border-color: var(--gold); color: white; background: #222; }
-.room-btn.full { opacity: 0.5; pointer-events: none; }
+/* --- LOBBY (Otimizado) --- */
+#lobby-screen { align-items: center; justify-content: center; padding: 20px; overflow-y: auto; }
+
+.casino-sign h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(3rem, 8vw, 5rem); /* Fonte ajustável */
+    color: #fff;
+    text-shadow: 0 0 20px var(--neon-pink);
+    animation: flicker 3s infinite alternate;
+    margin-bottom: 30px;
+    text-align: center;
+    line-height: 1.1;
+}
+
+@keyframes flicker {
+    0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { opacity: 1; text-shadow: 0 0 20px var(--neon-pink); }
+    20%, 24%, 55% { opacity: 0.5; text-shadow: none; }
+}
+
+.lobby-container {
+    display: flex; gap: 30px; flex-wrap: wrap; justify-content: center; width: 100%;
+}
+
+.login-panel, .rooms-panel {
+    background: rgba(10, 10, 10, 0.95);
+    padding: 30px;
+    border-radius: 15px;
+    width: 100%; max-width: 350px; /* Não fica gigante, mas preenche celular */
+    min-height: 350px;
+    display: flex; flex-direction: column;
+}
+
+.login-panel h3, .rooms-panel h3 {
+    color: var(--gold);
+    text-align: center;
+    font-family: 'Playfair Display';
+    border-bottom: 1px solid #333;
+    padding-bottom: 10px;
+    margin-top: 0;
+    font-size: 1.5rem;
+}
+
+input {
+    background: #1a1a1a; border: 1px solid #444; color: white;
+    padding: 15px; margin-bottom: 15px; font-size: 1.1rem;
+    text-align: center; width: 100%; box-sizing: border-box;
+    border-radius: 8px;
+}
+input:focus { border-color: var(--gold); outline: none; }
+
+.limit-selector { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.limit-selector input { width: 70px; margin: 0; }
 
 .btn-gold {
-    background: linear-gradient(180deg, #ffd700, #b8860b);
-    border: none; color: #000; font-weight: bold; padding: 12px; border-radius: 5px; cursor: pointer; font-size: 1rem; margin-top: 10px;
-    transition: transform 0.1s;
+    background: linear-gradient(180deg, #ffd700 0%, #b8860b 100%);
+    border: 1px solid #fff; color: #1a0505; font-weight: 900;
+    padding: 15px; font-size: 1.2rem; cursor: pointer; margin-top: auto;
+    border-radius: 8px; text-transform: uppercase; letter-spacing: 1px;
+    width: 100%;
 }
-.btn-gold:hover { transform: scale(1.02); box-shadow: 0 0 15px var(--gold); }
 
-/* --- 3. TELA DO JOGO --- */
+/* --- JOGO HEADER --- */
 .vegas-header {
-    background: #111;
-    border-bottom: 2px solid var(--gold);
-    padding: 10px 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    height: 60px;
+    height: 60px; background: #000; border-bottom: 2px solid var(--gold);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 20px; z-index: 10;
 }
+.room-info { font-size: 1.2rem; color: var(--neon-blue); text-shadow: 0 0 10px var(--neon-blue); font-weight: bold; }
+.players-info { font-size: 1.2rem; cursor: pointer; color: white; display: flex; align-items: center; gap: 8px; }
 
-.room-info { font-family: 'Courier Prime', monospace; color: var(--gold); font-size: 1.2rem; }
-
-/* Botão Música */
-.music-toggle { background: transparent; border: 1px solid var(--gold); color: var(--gold); padding: 5px 15px; border-radius: 20px; cursor: pointer; }
-.music-off { border-color: #555; color: #555; text-decoration: line-through; }
-.players-info { cursor: pointer; position: relative; font-size: 1.1rem; }
-.dropdown-content { display: none; position: absolute; right: 0; top: 100%; background: #111; border: 1px solid var(--gold); width: 200px; z-index: 200; border-radius: 0 0 10px 10px; }
-.dropdown-content ul { list-style: none; padding: 0; margin: 0; max-height: 200px; overflow-y: auto; }
-
-
-/* LAYOUT DO JOGO */
+/* --- ÁREA DO JOGO (RESPONSIVA) --- */
 .game-layout {
     display: flex;
+    /* Calcula altura descontando header e footer */
+    height: calc(100vh - 110px); 
+    align-items: center;
     justify-content: center;
-    align-items: flex-start;
-    gap: 50px;
+    gap: 30px;
     padding: 20px;
-    overflow-y: auto;
-    /* ESSENCIAL: Espaço extra embaixo para o rodapé não cobrir a cartela */
-    padding-bottom: 100px; 
-    flex-grow: 1;
+    box-sizing: border-box;
 }
 
-/* Esquerda */
-.stage-left { display: flex; flex-direction: column; align-items: center; width: 300px; }
-.machine-container { position: relative; width: 100%; max-width: 300px; text-align: center; }
-#globe-img { width: 100%; }
-.shaking { animation: shake 0.5s infinite; }
-@keyframes shake { 0% { transform: translate(1px, 1px) rotate(0deg); } 25% { transform: translate(-1px, -2px) rotate(-1deg); } 75% { transform: translate(-1px, 2px) rotate(-1deg); } 100% { transform: translate(1px, -1px) rotate(0deg); } }
+.stage-left, .stage-right {
+    flex: 1; 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    justify-content: center;
+    height: 100%;
+}
+
+/* --- GLOBO (Agora maior e escalável) --- */
+.machine-container {
+    position: relative;
+    width: 100%;
+    max-width: 500px; /* Bem maior no Desktop */
+    aspect-ratio: 1; /* Mantém quadrado */
+    display: flex; align-items: center; justify-content: center;
+}
+#globe-img { width: 100%; height: auto; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.7)); }
 
 .ball-display {
     position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    width: 100px; height: 100px;
-    background: radial-gradient(circle at 30% 30%, #fff, #ddd);
-    border-radius: 50%; display: flex; justify-content: center; align-items: center;
-    border: 2px solid #333; color: #000; font-weight: 900; font-size: 3rem;
-    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    width: 40%; height: 40%; /* Relativo ao globo */
+    background: radial-gradient(circle at 30% 30%, #ff5e5e, #990000);
+    border-radius: 50%; border: 4px solid #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: clamp(2rem, 5vw, 4.5rem); /* Fonte cresce com a tela */
+    font-weight: bold; font-family: 'Playfair Display';
+    box-shadow: 0 0 30px rgba(255, 255, 255, 0.5); z-index: 50;
 }
-.ball-enter { animation: popIn 0.5s; }
-@keyframes popIn { 0% { transform: translate(-50%, -50%) scale(0); } 100% { transform: translate(-50%, -50%) scale(1); } }
 
-.timer-box { margin-top: 20px; font-family: 'Courier Prime', monospace; font-size: 2rem; text-align: center; color: var(--neon-blue); text-shadow: 0 0 10px var(--neon-blue); }
-.timer-active { color: var(--red); text-shadow: 0 0 10px var(--red); }
-.btn-start { background: #27ae60; border: none; color: white; padding: 10px 20px; border-radius: 50px; margin-top: 20px; cursor: pointer; font-weight: bold; box-shadow: 0 0 10px #27ae60; animation: pulse 2s infinite; }
-@keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(39, 174, 96, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(39, 174, 96, 0); } 100% { box-shadow: 0 0 0 0 rgba(39, 174, 96, 0); } }
-.waiting-text { margin-top: 15px; color: #aaa; animation: blink 1.5s infinite; }
-@keyframes blink { 50% { opacity: 0.3; } }
+.timer-box { font-size: clamp(1.5rem, 3vw, 2.5rem); color: var(--gold); margin-top: 10px; font-family: 'Courier Prime'; text-shadow: 0 0 10px var(--gold); text-align: center; }
 
-
-/* Direita (Cartela) */
-.stage-right { display: flex; flex-direction: column; align-items: center; }
-.card-frame { background: #fff; border: 10px solid var(--gold); border-radius: 10px; padding: 20px; box-shadow: 0 0 30px rgba(0,0,0,0.8); width: 400px; }
-.card-title { color: #000; text-align: center; margin: 0 0 10px 0; font-family: 'Playfair Display', serif; font-size: 2rem; border-bottom: 2px solid #ccc; padding-bottom: 5px; }
-.progress-bar { width: 100%; height: 10px; background: #eee; border-radius: 5px; overflow: hidden; margin-bottom: 5px; }
-#progress-fill { height: 100%; background: var(--red); width: 0%; transition: width 0.5s; }
-#score-text { text-align: center; color: #555; font-size: 0.9rem; margin-bottom: 15px; font-weight: bold; }
-.card-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
-.grid-item {
-    background: #eee; color: #333; aspect-ratio: 1; display: flex; justify-content: center; align-items: center;
-    font-weight: 900; font-size: 1.5rem; border-radius: 5px; cursor: pointer; border: 2px solid #ddd;
-}
-.grid-item:hover { background: #ddd; }
-.grid-item.marked { background: var(--red); color: white; border-color: #a93226; transform: scale(0.95); box-shadow: inset 0 0 10px rgba(0,0,0,0.3); }
-
-
-/* --- 4. RODAPÉ (TICKER - DE VOLTA!) --- */
-.ticker-wrap {
-    position: fixed;
-    bottom: 0;
+/* --- CARTELA (Maior e Flexível) --- */
+.card-frame {
+    padding: 20px;
+    border-radius: 15px;
     width: 100%;
-    overflow: hidden;
-    height: 50px;
-    background-color: #111;
-    border-top: 2px solid var(--gold);
-    padding-left: 100%; /* Começa fora da tela */
-    display: flex;
-    align-items: center;
-    z-index: 999;
+    max-width: 500px; /* Maior no Desktop */
+    background: #080808;
+    box-sizing: border-box;
 }
 
-/* Animação que corre da direita para esquerda */
-@keyframes ticker {
-    0% { transform: translate3d(0, 0, 0); }
-    100% { transform: translate3d(-100%, 0, 0); }
+.card-title {
+    color: var(--gold); margin: 0 0 15px 0;
+    font-family: 'Playfair Display';
+    font-size: clamp(1.5rem, 3vw, 2.2rem);
+    text-shadow: 0 0 10px var(--gold-dim);
 }
 
-.ticker {
-    display: inline-block;
-    height: 50px;
-    line-height: 50px;
-    white-space: nowrap;
-    padding-right: 100%;
-    animation-iteration-count: infinite;
-    animation-timing-function: linear;
-    animation-name: ticker;
-    animation-duration: 30s; /* Ajuste a velocidade aqui */
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px; /* Mais espaço */
 }
 
-.ticker__item {
-    display: inline-block;
-    padding: 0 2rem;
-    font-size: 1.5rem;
-    color: var(--gold);
-    font-family: 'Courier Prime', monospace;
-    font-weight: bold;
+.grid-item {
+    aspect-ratio: 1; /* Mantém as bolas redondas/quadradas */
+    background: linear-gradient(135deg, #2a2a2a, #1a1a1a);
+    border: 1px solid #444; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: clamp(1rem, 2.5vw, 1.8rem); /* Números grandes */
+    font-weight: bold; color: #888; cursor: pointer;
+    box-shadow: inset 0 0 5px rgba(0,0,0,0.5);
+}
+.grid-item.marked {
+    background: radial-gradient(circle at 30% 30%, #ffffff, var(--gold));
+    color: #000; border-color: #fff; box-shadow: 0 0 20px var(--gold);
+    transform: scale(1.05); z-index: 2;
 }
 
-/* Bolinhas dentro do ticker (Histórico) */
-.ticker-ball {
-    display: inline-block;
-    background: white;
-    color: black;
-    border-radius: 50%;
-    width: 35px; height: 35px;
-    line-height: 35px;
-    text-align: center;
-    margin: 0 5px;
-    font-weight: bold;
-    border: 2px solid var(--gold);
+/* --- RODAPÉ --- */
+.ticker-wrap { position: fixed; bottom: 0; width: 100%; height: 50px; background: #000; border-top: 2px solid var(--neon-pink); display: flex; align-items: center; overflow: hidden; z-index: 100; }
+.ticker { display: flex; animation: scroll 25s linear infinite; padding-left: 100%; white-space: nowrap; }
+.ticker__item { display: flex; color: var(--gold); font-size: 1.3rem; align-items: center; }
+.ticker-ball { width: 32px; height: 32px; border-radius: 50%; background: var(--gold); color: black; display: flex; align-items: center; justify-content: center; margin: 0 15px; font-weight: bold; border: 2px solid #fff; }
+@keyframes scroll { 100% { transform: translateX(-100%); } }
+
+/* --- MODAL VENCEDOR --- */
+.modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); display: none; align-items: center; justify-content: center; z-index: 200; }
+.winner-box {
+    background: #000; padding: 30px; text-align: center;
+    border: 6px dotted #444; position: relative;
+    animation: marquee-lights 0.5s infinite steps(2);
+    box-shadow: 0 0 80px var(--red-vegas);
+    border-radius: 20px; width: 90%; max-width: 500px;
 }
-.ticker-heading {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    background: var(--gold);
-    color: black;
-    padding: 0 10px;
-    height: 50px;
-    line-height: 50px;
-    font-weight: bold;
-    z-index: 1000;
-    border-right: 2px solid #000;
-}
+@keyframes marquee-lights { 0% { border-color: var(--gold); } 100% { border-color: var(--red-vegas); } }
+#winner-name { font-size: clamp(2rem, 5vw, 4rem); color: #fff; font-family: 'Playfair Display'; text-shadow: 0 0 20px var(--neon-pink); animation: text-flash 0.2s infinite; text-transform: uppercase; word-break: break-word;}
+@keyframes text-flash { 0% { opacity: 1; } 50% { opacity: 0.7; color: var(--gold); } 100% { opacity: 1; } }
 
-
-/* --- 5. MODAIS --- */
-.modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.9); justify-content: center; align-items: center; }
-.modal-content { background: #111; border: 4px solid var(--gold); padding: 40px; text-align: center; border-radius: 20px; box-shadow: 0 0 50px var(--gold); max-width: 90%; color: white;}
-.jackpot-text { font-size: 4rem; color: var(--gold); margin: 0; font-family: 'Playfair Display', serif; animation: textGlow 1s infinite alternate; }
-@keyframes textGlow { from { text-shadow: 0 0 10px var(--gold); } to { text-shadow: 0 0 30px var(--gold), 0 0 50px white; } }
-.winner-name-display { font-size: 2.5rem; color: white; margin-top: 20px; font-weight: bold; }
-
-/* --- RESPONSIVIDADE --- */
+/* --- AJUSTES MOBILE (A MÁGICA ACONTECE AQUI) --- */
 @media (max-width: 768px) {
-    .casino-sign h1 { font-size: 3rem; margin-top: 20px; }
+    .casino-sign h1 { margin-top: 20px; font-size: 3rem; }
     
+    /* Muda layout para coluna no celular */
     .game-layout {
         flex-direction: column;
-        padding-bottom: 120px; /* Aumentei ainda mais para o rodapé não cobrir */
+        height: auto; /* Altura livre para rolar se precisar */
+        padding-bottom: 80px; /* Espaço pro rodapé */
+        justify-content: flex-start;
         gap: 15px;
     }
+
+    /* Reduz um pouco o globo no celular para sobrar espaço pra cartela */
     .machine-container { max-width: 250px; margin-top: 10px; }
+    
+    /* A Cartela ocupa a largura disponível */
     .card-frame { width: 100%; max-width: 400px; padding: 15px; }
+    
+    /* Ajusta grid para toque fácil */
     .card-grid { gap: 8px; }
     .grid-item { font-size: 1.2rem; }
-    .vegas-header { padding: 0 15px; }
     
-    /* Ajuste do Ticker no celular */
-    .ticker-heading { font-size: 0.8rem; width: auto; }
+    /* Esconde elementos menos importantes se a tela for muito pequena */
+    .timer-box { font-size: 1.5rem; margin-top: 5px; }
+    .vegas-header { padding: 0 15px; }
+
+    /* Botão de Música no Header */
+.music-toggle {
+    background: transparent;
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    padding: 5px 15px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: bold;
+    transition: 0.2s;
+    display: flex; align-items: center; gap: 5px;
 }
+
+.music-toggle:hover {
+    background: rgba(255, 204, 0, 0.1);
+    box-shadow: 0 0 10px var(--gold-dim);
+}
+
+/* Quando estiver desligado (classe que o JS vai adicionar) */
+.music-off {
+    border-color: #555;
+    color: #555;
+    text-decoration: line-through;
+}
+
+
+}
+
+.rooms-grid { max-height: 200px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-right: 5px; }
+.room-btn { background: #151515; padding: 12px; cursor: pointer; display: flex; justify-content: space-between; color: #aaa; border: 1px solid #333; border-radius: 5px; font-size: 0.9rem; }
+.dropdown-content { display: none; position: absolute; right: 0; top: 100%; background: #111; border: 1px solid var(--gold); width: 200px; z-index: 100; border-radius: 0 0 10px 10px; }
+.hidden { display: none !important; }
